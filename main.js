@@ -13,6 +13,14 @@ const pages = {
       'Resume Context'
     ]
   },
+  application: {
+    title: 'Application Tools',
+    submenus: [
+      'Upload Application',
+      'Enhance Application',
+      'Application Context'
+    ]
+  },
   settings: {
     title: 'Settings',
     submenus: [
@@ -187,6 +195,74 @@ function getSubmenuContent(submenu) {
           <div class="bg-yale_blue-300 p-4 rounded-lg border border-yale_blue-400">
             <h3 class="font-semibold text-naples_yellow-500">Preferred Industries</h3>
             <textarea class="w-full mt-2 p-2 border border-yale_blue-500 rounded bg-yale_blue-200 text-lemon_chiffon-500" rows="2" placeholder="e.g., Technology, Healthcare, Finance"></textarea>
+          </div>
+        </div>
+      </div>
+    `,
+    'Upload Application': `
+      <div class="max-w-2xl p-6">
+        <p class="text-lemon_chiffon-500 mb-4">Upload your job application to begin. The file will be processed and stored locally on your machine.</p>
+        <div class="border-2 border-dashed border-yale_blue-400 rounded-lg p-8 text-center bg-yale_blue-300">
+          <button onclick="window.handleFileSelect()" class="bg-tomato-500 text-white px-6 py-3 rounded-lg hover:bg-tomato-600 transition-colors">
+            Choose File
+          </button>
+          <p class="mt-2 text-sm text-lemon_chiffon-400">PDF, DOCX, or TXT files accepted</p>
+        </div>
+      </div>
+    `,
+    'Enhance Application': `
+      <div class="max-w-2xl p-6">
+        <p class="text-lemon_chiffon-500 mb-4">Generate tailored improvements for your job application using AI assistance.</p>
+        <div class="space-y-4">
+          <div class="bg-yale_blue-300 p-4 rounded-lg border border-yale_blue-400">
+            <h3 class="font-semibold text-naples_yellow-500">Application Type</h3>
+            <select class="w-full mt-2 p-2 border border-yale_blue-500 rounded bg-yale_blue-200 text-lemon_chiffon-500">
+              <option>Cover Letter</option>
+              <option>Personal Statement</option>
+              <option>Project Description</option>
+              <option>Job Description Response</option>
+            </select>
+          </div>
+          <div class="bg-yale_blue-300 p-4 rounded-lg border border-yale_blue-400">
+            <h3 class="font-semibold text-naples_yellow-500">Company</h3>
+            <input type="text" class="w-full mt-2 p-2 border border-yale_blue-500 rounded bg-yale_blue-200 text-lemon_chiffon-500" placeholder="e.g., Tech Corp">
+          </div>
+          <div class="bg-yale_blue-300 p-4 rounded-lg border border-yale_blue-400">
+            <h3 class="font-semibold text-naples_yellow-500">Enhancement Focus</h3>
+            <select class="w-full mt-2 p-2 border border-yale_blue-500 rounded bg-yale_blue-200 text-lemon_chiffon-500">
+              <option>Clarity & Conciseness</option>
+              <option>Professional Tone</option>
+              <option>Keywords Optimization</option>
+              <option>Impact & Achievement Focus</option>
+            </select>
+          </div>
+          <button class="bg-tomato-500 text-white px-6 py-3 rounded-lg hover:bg-tomato-600 transition-colors w-full">
+            Generate Improvements
+          </button>
+        </div>
+      </div>
+    `,
+    'Application Context': `
+      <div class="max-w-2xl p-6">
+        <p class="text-lemon_chiffon-500 mb-4">Provide additional context to improve the AI-generated suggestions for your application materials.</p>
+        <div class="space-y-4">
+          <div class="bg-yale_blue-300 p-4 rounded-lg border border-yale_blue-400">
+            <h3 class="font-semibold text-naples_yellow-500">Industry Focus</h3>
+            <select class="w-full mt-2 p-2 border border-yale_blue-500 rounded bg-yale_blue-200 text-lemon_chiffon-500">
+              <option>Technology</option>
+              <option>Healthcare</option>
+              <option>Finance</option>
+              <option>Education</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="bg-yale_blue-300 p-4 rounded-lg border border-yale_blue-400">
+            <h3 class="font-semibold text-naples_yellow-500">Target Keywords</h3>
+            <textarea class="w-full mt-2 p-2 border border-yale_blue-500 rounded bg-yale_blue-200 text-lemon_chiffon-500" rows="3" placeholder="Enter relevant keywords for your application"></textarea>
+          </div>
+          <div class="bg-yale_blue-300 p-4 rounded-lg border border-yale_blue-400">
+            <h3 class="font-semibold text-naples_yellow-500">Company Culture Notes</h3>
+            <textarea class="w-full mt-2 p-2 border border-yale_blue-500 rounded bg-yale_blue-200 text-lemon_chiffon-500" rows="2" placeholder="Enter notes about the company culture and values"></textarea>
           </div>
         </div>
       </div>
