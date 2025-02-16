@@ -7,9 +7,14 @@ class AIService:
     def __init__(self):
         self.openai_client = None
         self.ollama_url = settings.ollama_base_url
+        self.api_base = None
 
-    def init_openai(self, api_key: str):
-        self.openai_client = OpenAI(api_key=api_key)
+    def init_openai(self, api_key: str, api_base: str = None):
+        self.api_base = api_base
+        self.openai_client = OpenAI(
+            api_key=api_key,
+            base_url=api_base if api_base else "https://api.openai.com/v1"
+        )
 
     async def generate_openai_response(self, prompt: str, context: dict) -> str:
         try:

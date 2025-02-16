@@ -193,11 +193,20 @@ function getSubmenuContent(submenu) {
     `,
     'API Key': `
       <div class="max-w-2xl p-6">
-        <p class="text-lemon_chiffon-500 mb-4">Configure your OpenAI API key for enhanced response generation.</p>
-        <div class="bg-yale_blue-300 p-4 rounded-lg border border-yale_blue-400">
-          <h3 class="font-semibold text-naples_yellow-500">OpenAI API Key</h3>
-          <input type="password" class="w-full mt-2 p-2 border border-yale_blue-500 rounded bg-yale_blue-200 text-lemon_chiffon-500" placeholder="Enter your OpenAI API key">
-          <p class="mt-2 text-sm text-lemon_chiffon-400">Your API key is stored locally and used only for generating responses.</p>
+        <p class="text-lemon_chiffon-500 mb-4">Configure your OpenAI API settings for enhanced response generation.</p>
+        <div class="space-y-4">
+          <div class="bg-yale_blue-300 p-4 rounded-lg border border-yale_blue-400">
+            <h3 class="font-semibold text-naples_yellow-500">OpenAI API Base URL</h3>
+            <input type="text" id="api-base" class="w-full mt-2 p-2 border border-yale_blue-500 rounded bg-yale_blue-200 text-lemon_chiffon-500" placeholder="Enter your OpenAI API base URL (e.g., https://rgvaiclass.com/chat/api/v1)">
+          </div>
+          <div class="bg-yale_blue-300 p-4 rounded-lg border border-yale_blue-400">
+            <h3 class="font-semibold text-naples_yellow-500">OpenAI API Key</h3>
+            <input type="password" id="api-key" class="w-full mt-2 p-2 border border-yale_blue-500 rounded bg-yale_blue-200 text-lemon_chiffon-500" placeholder="Enter your OpenAI API key">
+            <p class="mt-2 text-sm text-lemon_chiffon-400">Your API settings are stored locally and used only for generating responses.</p>
+          </div>
+          <button onclick="window.handleApplyAPISettings()" class="bg-tomato-500 text-white px-6 py-3 rounded-lg hover:bg-tomato-600 transition-colors w-full">
+            Apply Settings
+          </button>
         </div>
       </div>
     `,
@@ -261,6 +270,33 @@ window.handleFileSelect = () => {
       document.body.removeChild(fileInput);
     }, 1000);
   });
+};
+
+window.handleApplyAPISettings = async () => {
+  const apiBase = document.getElementById('api-base').value;
+  const apiKey = document.getElementById('api-key').value;
+
+  try {
+    const response = await fetch('http://localhost:8000/api/settings/openai', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        api_base: apiBase,
+        api_key: apiKey
+      })
+    });
+    
+    if (response.ok) {
+      alert('API settings updated successfully!');
+    } else {
+      alert('Failed to update API settings. Please try again.');
+    }
+  } catch (error) {
+    console.error('Error updating API settings:', error);
+    alert('Error updating API settings. Please check your connection.');
+  }
 };
 
 // Initial render
