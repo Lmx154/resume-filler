@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.menu-item {
+  @apply px-4 py-3 text-lg transition-colors duration-200 text-lemon_chiffon-500 hover:bg-yale_blue-500 cursor-pointer flex items-center gap-2;
+}
+
+.menu-item.active {
+  @apply bg-yale_blue-500;
+}
+
+.submenu-item {
+  @apply px-6 py-2 text-base transition-colors duration-200 hover:bg-yale_blue-400 text-lemon_chiffon-500 cursor-pointer;
+}
+
+.submenu-item:hover {
+  @apply text-lemon_chiffon-400;
+}
