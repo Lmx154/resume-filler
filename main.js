@@ -97,13 +97,43 @@ function renderContent() {
   `;
 }
 
+function createFileInput() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.pdf,.docx,.txt';
+  input.style.display = 'none';
+  input.onchange = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        const response = await fetch('http://localhost:8000/api/resume/upload', {
+          method: 'POST',
+          body: formData
+        });
+        
+        const result = await response.json();
+        if (result.status === 'success') {
+          // You can handle the successful upload here
+          console.log('File uploaded successfully');
+        }
+      } catch (error) {
+        console.error('Error uploading file:', error);
+      }
+    }
+  };
+  return input;
+}
+
 function getSubmenuContent(submenu) {
   const contents = {
     'Upload Resume': `
       <div class="max-w-2xl p-6">
         <p class="text-lemon_chiffon-500 mb-4">Upload your resume to begin. The file will be processed and stored locally on your machine.</p>
         <div class="border-2 border-dashed border-yale_blue-400 rounded-lg p-8 text-center bg-yale_blue-300">
-          <button class="bg-tomato-500 text-white px-6 py-3 rounded-lg hover:bg-tomato-600 transition-colors">
+          <button onclick="window.handleFileSelect()" class="bg-tomato-500 text-white px-6 py-3 rounded-lg hover:bg-tomato-600 transition-colors">
             Choose File
           </button>
           <p class="mt-2 text-sm text-lemon_chiffon-400">PDF, DOCX, or TXT files accepted</p>
@@ -218,6 +248,19 @@ window.handleNavigation = (page) => {
 window.handleSubmenu = (submenu) => {
   currentSubmenu = submenu;
   document.querySelector('#app').innerHTML = renderContent();
+};
+
+// Add file selection handler
+window.handleFileSelect = () => {
+  const fileInput = createFileInput();
+  document.body.appendChild(fileInput);
+  fileInput.click();
+  // Remove the input after selection
+  fileInput.addEventListener('change', () => {
+    setTimeout(() => {
+      document.body.removeChild(fileInput);
+    }, 1000);
+  });
 };
 
 // Initial render

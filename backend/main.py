@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routes import resume
+from routes import resume, system
 from config import settings
 
 app = FastAPI(title=settings.app_name)
@@ -14,6 +14,7 @@ app.add_middleware(
 )
 
 app.include_router(resume.router)
+app.include_router(system.router)
 
 @app.get("/health")
 async def health_check():
