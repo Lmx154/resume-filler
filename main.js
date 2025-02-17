@@ -105,6 +105,46 @@ function renderContent() {
   `;
 }
 
+async function processResumeFile(file) {
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    const response = await fetch('http://localhost:8000/api/resume/upload', {
+      method: 'POST',
+      body: formData
+    });
+    
+    const result = await response.json();
+    if (result.status === 'success') {
+      // Get the AI response container
+      const aiResponse = document.getElementById('ai-response');
+      if (aiResponse) {
+        const formattedContent = `
+          <div class="text-lemon_chiffon-500">
+            <div class="mb-4 grid grid-cols-2 gap-4">
+              <div>
+                <span class="font-semibold">Words:</span> ${result.metadata.word_count}
+                <span class="ml-4 font-semibold">Read Time:</span> ${result.metadata.estimated_read_time}m
+              </div>
+              <div>
+                <span class="font-semibold">Sentences:</span> ${result.metadata.sentence_count}
+              </div>
+            </div>
+            <div class="whitespace-pre-wrap font-mono text-sm bg-yale_blue-300 p-4 rounded-lg max-h-[400px] overflow-y-auto">
+              ${JSON.stringify(result.parsed_sections, null, 2)}
+            </div>
+          </div>
+        `;
+        aiResponse.innerHTML = formattedContent;
+      }
+    }
+  } catch (error) {
+    console.error('Error processing resume:', error);
+    alert('Error processing resume. Please try again.');
+  }
+}
+
 function createFileInput() {
   const input = document.createElement('input');
   input.type = 'file';
@@ -113,23 +153,7 @@ function createFileInput() {
   input.onchange = async (e) => {
     const file = e.target.files[0];
     if (file) {
-      try {
-        const formData = new FormData();
-        formData.append('file', file);
-        
-        const response = await fetch('http://localhost:8000/api/resume/upload', {
-          method: 'POST',
-          body: formData
-        });
-        
-        const result = await response.json();
-        if (result.status === 'success') {
-          // You can handle the successful upload here
-          console.log('File uploaded successfully');
-        }
-      } catch (error) {
-        console.error('Error uploading file:', error);
-      }
+      await processResumeFile(file);
     }
   };
   return input;
@@ -234,34 +258,52 @@ function getSubmenuContent(submenu) {
       </div>
     `,
     'Enhance Application': `
-      <div class="max-w-2xl p-6">
-        <p class="text-lemon_chiffon-500 mb-4">Generate tailored improvements for your job application using AI assistance.</p>
-        <div class="space-y-4">
-          <div class="bg-yale_blue-300 p-4 rounded-lg border border-yale_blue-400">
-            <h3 class="font-semibold text-naples_yellow-500">Application Type</h3>
-            <select class="w-full mt-2 p-2 border border-yale_blue-500 rounded bg-yale_blue-200 text-lemon_chiffon-500">
-              <option>Cover Letter</option>
-              <option>Personal Statement</option>
-              <option>Project Description</option>
-              <option>Job Description Response</option>
-            </select>
+      <div class="max-w-4xl p-6">
+        <div class="grid grid-cols-2 gap-6">
+          <!-- Input Section -->
+          <div class="space-y-4">
+            <p class="text-lemon_chiffon-500 mb-4">Generate tailored improvements for your job application using AI assistance.</p>
+            <div class="bg-yale_blue-300 p-4 rounded-lg border border-yale_blue-400">
+              <h3 class="font-semibold text-naples_yellow-500">Application Type</h3>
+              <select class="w-full mt-2 p-2 border border-yale_blue-500 rounded bg-yale_blue-200 text-lemon_chiffon-500">
+                <option>Cover Letter</option>
+                <option>Personal Statement</option>
+                <option>Project Description</option>
+                <option>Job Description Response</option>
+              </select>
+            </div>
+            <div class="bg-yale_blue-300 p-4 rounded-lg border border-yale_blue-400">
+              <h3 class="font-semibold text-naples_yellow-500">Company</h3>
+              <input type="text" class="w-full mt-2 p-2 border border-yale_blue-500 rounded bg-yale_blue-200 text-lemon_chiffon-500" placeholder="e.g., Tech Corp">
+            </div>
+            <div class="bg-yale_blue-300 p-4 rounded-lg border border-yale_blue-400">
+              <h3 class="font-semibold text-naples_yellow-500">Enhancement Focus</h3>
+              <select class="w-full mt-2 p-2 border border-yale_blue-500 rounded bg-yale_blue-200 text-lemon_chiffon-500">
+                <option>Clarity & Conciseness</option>
+                <option>Professional Tone</option>
+                <option>Keywords Optimization</option>
+                <option>Impact & Achievement Focus</option>
+              </select>
+            </div>
+            <button class="bg-tomato-500 text-white px-6 py-3 rounded-lg hover:bg-tomato-600 transition-colors w-full">
+              Generate Improvements
+            </button>
           </div>
-          <div class="bg-yale_blue-300 p-4 rounded-lg border border-yale_blue-400">
-            <h3 class="font-semibold text-naples_yellow-500">Company</h3>
-            <input type="text" class="w-full mt-2 p-2 border border-yale_blue-500 rounded bg-yale_blue-200 text-lemon_chiffon-500" placeholder="e.g., Tech Corp">
+
+          <!-- Response Section -->
+          <div class="bg-yale_blue-300 rounded-lg p-6 border border-yale_blue-400">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-xl font-semibold text-naples_yellow-500">AI Response</h3>
+              <div>
+                <button onclick="window.clearAIResponse()" class="text-sm text-tomato-500 hover:text-tomato-600">
+                  Clear
+                </button>
+              </div>
+            </div>
+            <div id="ai-response" class="bg-yale_blue-200 rounded-lg p-4 h-[400px] overflow-auto">
+              <p class="text-lemon_chiffon-500 text-center">AI response will appear here...</p>
+            </div>
           </div>
-          <div class="bg-yale_blue-300 p-4 rounded-lg border border-yale_blue-400">
-            <h3 class="font-semibold text-naples_yellow-500">Enhancement Focus</h3>
-            <select class="w-full mt-2 p-2 border border-yale_blue-500 rounded bg-yale_blue-200 text-lemon_chiffon-500">
-              <option>Clarity & Conciseness</option>
-              <option>Professional Tone</option>
-              <option>Keywords Optimization</option>
-              <option>Impact & Achievement Focus</option>
-            </select>
-          </div>
-          <button class="bg-tomato-500 text-white px-6 py-3 rounded-lg hover:bg-tomato-600 transition-colors w-full">
-            Generate Improvements
-          </button>
         </div>
       </div>
     `,
@@ -357,10 +399,9 @@ window.handleSubmenu = (submenu) => {
   currentSubmenu = submenu;
   document.querySelector('#app').innerHTML = renderContent();
   if (submenu === 'Upload Application') {
-    // Auto-refresh just once after opening the page
     setTimeout(() => {
       window.handleRefreshData();
-    }, 500); // small delay
+    }, 500);
   }
 };
 
@@ -382,21 +423,9 @@ window.handleApplyAPISettings = async () => {
   const apiKey = document.getElementById('api-key').value;
 
   try {
-    const response = await fetch('http://localhost:8000/api/settings/openai', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        api_base: apiBase,
-        api_key: apiKey
-      })
-    });
-    
-    if (response.ok) {
+    if (apiKey) {
+      ai_service.init_openai(apiKey, apiBase);
       alert('API settings updated successfully!');
-    } else {
-      alert('Failed to update API settings. Please try again.');
     }
   } catch (error) {
     console.error('Error updating API settings:', error);
@@ -468,6 +497,14 @@ window.handleRefreshData = async () => {
     }
   } catch (error) {
     console.error('Error fetching data:', error);
+  }
+};
+
+// Add this new function after the existing window.clearExtensionData function
+window.clearAIResponse = () => {
+  const responseContainer = document.getElementById('ai-response');
+  if (responseContainer) {
+    responseContainer.innerHTML = '<p class="text-lemon_chiffon-500 text-center">AI response will appear here...</p>';
   }
 };
 
