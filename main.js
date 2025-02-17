@@ -200,13 +200,36 @@ function getSubmenuContent(submenu) {
       </div>
     `,
     'Upload Application': `
-      <div class="max-w-2xl p-6">
-        <p class="text-lemon_chiffon-500 mb-4">Upload your job application to begin. The file will be processed and stored locally on your machine.</p>
-        <div class="border-2 border-dashed border-yale_blue-400 rounded-lg p-8 text-center bg-yale_blue-300">
-          <button onclick="window.handleFileSelect()" class="bg-tomato-500 text-white px-6 py-3 rounded-lg hover:bg-tomato-600 transition-colors">
-            Choose File
-          </button>
-          <p class="mt-2 text-sm text-lemon_chiffon-400">PDF, DOCX, or TXT files accepted</p>
+      <div class="max-w-4xl p-6">
+        <div class="grid grid-cols-2 gap-6">
+          <!-- File Upload Section -->
+          <div class="bg-yale_blue-300 rounded-lg p-6 border border-yale_blue-400">
+            <p class="text-lemon_chiffon-500 mb-4">Upload your job application to begin. The file will be processed and stored locally on your machine.</p>
+            <div class="border-2 border-dashed border-yale_blue-400 rounded-lg p-8 text-center bg-yale_blue-300">
+              <button onclick="window.handleFileSelect()" class="bg-tomato-500 text-white px-6 py-3 rounded-lg hover:bg-tomato-600 transition-colors">
+                Choose File
+              </button>
+              <p class="mt-2 text-sm text-lemon_chiffon-400">PDF, DOCX, or TXT files accepted</p>
+            </div>
+          </div>
+
+          <!-- Extension Data Section -->
+          <div class="bg-yale_blue-300 rounded-lg p-6 border border-yale_blue-400">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-xl font-semibold text-naples_yellow-500">Extension Data</h3>
+              <div>
+                <button onclick="window.handleRefreshData()" class="mr-2 text-sm text-lemon_chiffon-500 hover:text-lemon_chiffon-400">
+                  ↻ Refresh
+                </button>
+                <button onclick="window.clearExtensionData()" class="text-sm text-tomato-500 hover:text-tomato-600">
+                  Clear
+                </button>
+              </div>
+            </div>
+            <div id="extension-data" class="bg-yale_blue-200 rounded-lg p-4 h-[300px] overflow-auto">
+              <p class="text-lemon_chiffon-500 text-center">Waiting for data from extension...</p>
+            </div>
+          </div>
         </div>
       </div>
     `,
@@ -333,6 +356,12 @@ window.handleNavigation = (page) => {
 window.handleSubmenu = (submenu) => {
   currentSubmenu = submenu;
   document.querySelector('#app').innerHTML = renderContent();
+  if (submenu === 'Upload Application') {
+    // Auto-refresh just once after opening the page
+    setTimeout(() => {
+      window.handleRefreshData();
+    }, 500); // small delay
+  }
 };
 
 // Add file selection handler
@@ -372,6 +401,73 @@ window.handleApplyAPISettings = async () => {
   } catch (error) {
     console.error('Error updating API settings:', error);
     alert('Error updating API settings. Please check your connection.');
+  }
+};
+
+window.clearExtensionData = () => {
+  const dataContainer = document.getElementById('extension-data');
+  if (dataContainer) {
+    dataContainer.innerHTML = '<p class="text-lemon_chiffon-500 text-center">Waiting for data from extension...</p>';
+  }
+};
+
+// Update handleExtensionData to handle the new data format
+window.handleExtensionData = (data) => {
+  console.log("handleExtensionData called with:", data);
+  const dataContainer = document.getElementById('extension-data');
+  console.log("dataContainer found:", !!dataContainer);
+  
+  if (dataContainer && data.display_text) {
+    console.log("Updating container HTML");
+    const metrics = data.metadata;
+    
+    dataContainer.innerHTML = `
+      <div class="text-lemon_chiffon-500">
+        <div class="mb-4 grid grid-cols-2 gap-4">
+          <div>
+            <span class="font-semibold">Words:</span> ${metrics.word_count}
+            <span class="ml-4 font-semibold">Paragraphs:</span> ${metrics.paragraph_count}
+          </div>
+          <div>
+            <span class="font-semibold">Sentences:</span> ${metrics.sentence_count}
+            <span class="ml-4 font-semibold">Read Time:</span> ${metrics.estimated_read_time}m
+          </div>
+        </div>
+        <div class="whitespace-pre-wrap font-mono text-sm bg-yale_blue-300 p-4 rounded-lg max-h-[400px] overflow-y-auto">
+          ${data.display_text}
+        </div>
+      </div>
+    `;
+  } else {
+    dataContainer.innerHTML = '<p class="text-lemon_chiffon-500 text-center">No data available</p>';
+  }
+};
+
+// Add refresh handler
+window.handleRefreshData = async () => {
+  try {
+    const dataContainer = document.getElementById('extension-data');
+    if (!dataContainer) {
+      console.log("No extension-data container found");
+      return;
+    }
+
+    console.log("Fetching latest extraction...");
+    const response = await fetch('http://localhost:8000/api/application/last_extract');
+    const data = await response.json();
+    console.log("GET last_extract full response:", JSON.stringify(data, null, 2));
+    
+    if(data.status === 'success' && data.display_text) {
+      console.log("Updating UI with data");
+      window.handleExtensionData(data);
+    } else {
+      console.log("Data not in expected format:", data);
+      dataContainer.innerHTML = `<p class="text-lemon_chiffon-500 text-center">
+        ${data.message || 'No data available'}
+      </p>`;
+    }
+  } catch (error) {
+    console.error('Error fetching data:', error);
   }
 };
 
