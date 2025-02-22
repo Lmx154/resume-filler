@@ -257,7 +257,7 @@ function getSubmenuContent(submenu) {
         </div>
       </div>
     `,
-    'Enhance Application': `
+'Enhance Application': `
       <div class="max-w-4xl p-6">
         <div class="grid grid-cols-2 gap-6">
           <!-- Input Section -->
@@ -265,7 +265,7 @@ function getSubmenuContent(submenu) {
             <p class="text-lemon_chiffon-500 mb-4">Generate tailored improvements for your job application using AI assistance.</p>
             <div class="bg-yale_blue-300 p-4 rounded-lg border border-yale_blue-400">
               <h3 class="font-semibold text-naples_yellow-500">Application Type</h3>
-              <select class="w-full mt-2 p-2 border border-yale_blue-500 rounded bg-yale_blue-200 text-lemon_chiffon-500">
+              <select id="application-type" class="w-full mt-2 p-2 border border-yale_blue-500 rounded bg-yale_blue-200 text-lemon_chiffon-500">
                 <option>Cover Letter</option>
                 <option>Personal Statement</option>
                 <option>Project Description</option>
@@ -274,18 +274,18 @@ function getSubmenuContent(submenu) {
             </div>
             <div class="bg-yale_blue-300 p-4 rounded-lg border border-yale_blue-400">
               <h3 class="font-semibold text-naples_yellow-500">Company</h3>
-              <input type="text" class="w-full mt-2 p-2 border border-yale_blue-500 rounded bg-yale_blue-200 text-lemon_chiffon-500" placeholder="e.g., Tech Corp">
+              <input id="company" type="text" class="w-full mt-2 p-2 border border-yale_blue-500 rounded bg-yale_blue-200 text-lemon_chiffon-500" placeholder="e.g., Tech Corp">
             </div>
             <div class="bg-yale_blue-300 p-4 rounded-lg border border-yale_blue-400">
               <h3 class="font-semibold text-naples_yellow-500">Enhancement Focus</h3>
-              <select class="w-full mt-2 p-2 border border-yale_blue-500 rounded bg-yale_blue-200 text-lemon_chiffon-500">
+              <select id="enhancement-focus" class="w-full mt-2 p-2 border border-yale_blue-500 rounded bg-yale_blue-200 text-lemon_chiffon-500">
                 <option>Clarity & Conciseness</option>
                 <option>Professional Tone</option>
                 <option>Keywords Optimization</option>
                 <option>Impact & Achievement Focus</option>
               </select>
             </div>
-            <button class="bg-tomato-500 text-white px-6 py-3 rounded-lg hover:bg-tomato-600 transition-colors w-full">
+            <button onclick="window.handleGenerateImprovements()" class="bg-tomato-500 text-white px-6 py-3 rounded-lg hover:bg-tomato-600 transition-colors w-full">
               Generate Improvements
             </button>
           </div>
@@ -505,6 +505,65 @@ window.clearAIResponse = () => {
   const responseContainer = document.getElementById('ai-response');
   if (responseContainer) {
     responseContainer.innerHTML = '<p class="text-lemon_chiffon-500 text-center">AI response will appear here...</p>';
+  }
+};
+
+// Add this new handler before the final line (document.querySelector('#app').innerHTML = renderContent();)
+window.handleGenerateImprovements = async () => {
+  try {
+    // Fetch the latest extension data
+    const extensionResponse = await fetch('http://localhost:8000/api/application/last_extract');
+    const extensionData = await extensionResponse.json();
+    if (!extensionData.display_text) {
+      throw new Error('No extension data available. Please upload an application first.');
+    }
+
+    // Fetch the latest resume data
+    const resumeResponse = await fetch('http://localhost:8000/api/resume/last_upload', { method: 'GET' });
+    const resumeData = await resumeResponse.json();
+    if (!resumeData.content) {
+      throw new Error('No resume data available. Please upload a resume first.');
+    }
+
+    // Collect form inputs
+    const applicationType = document.getElementById('application-type').value;
+    const company = document.getElementById('company').value;
+    const enhancementFocus = document.getElementById('enhancement-focus').value;
+
+    // Prepare the request payload
+    const requestBody = {
+      application_type: applicationType,
+      company: company,
+      enhancement_focus: enhancementFocus,
+      resume_content: resumeData.content,
+      application_content: extensionData.display_text
+    };
+
+    // Send the request to the backend
+    const response = await fetch('http://localhost:8000/api/application/enhance', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(requestBody)
+    });
+
+    const result = await response.json();
+    if (result.status === 'success') {
+      const aiResponse = document.getElementById('ai-response');
+      if (aiResponse) {
+        aiResponse.innerHTML = `
+          <div class="text-lemon_chiffon-500">
+            <div class="whitespace-pre-wrap font-mono text-sm bg-yale_blue-300 p-4 rounded-lg max-h-[400px] overflow-y-auto">
+              ${result.enhanced_content}
+            </div>
+          </div>
+        `;
+      }
+    } else {
+      throw new Error(result.message || 'Failed to generate improvements');
+    }
+  } catch (error) {
+    console.error('Error generating improvements:', error);
+    alert(`Error generating improvements: ${error.message}`);
   }
 };
 

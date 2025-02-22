@@ -19,6 +19,13 @@ async def upload_resume(file: UploadFile = File(...)):
         else:
             text_content = content.decode()
         parsed_data = file_service.parse_resume(text_content)
+        
+        await core_service.process_resume(Resume(
+            content=text_content,
+            file_name=file.filename,
+            file_type=file.content_type
+        ))
+        
         return {
             "status": "success",
             "parsed_sections": parsed_data["parsed_sections"],
@@ -27,6 +34,13 @@ async def upload_resume(file: UploadFile = File(...)):
         }
     except Exception as e:
         return {"status": "error", "message": str(e)}
+
+@router.get("/last_upload")
+async def get_last_upload():
+    last_resume = core_service.last_resume
+    if not last_resume:
+        return {"status": "pending", "message": "No resume uploaded yet"}
+    return last_resume
 
 @router.post("/enhance")
 async def enhance_resume(request: EnhanceRequest):

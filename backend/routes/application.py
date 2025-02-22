@@ -8,6 +8,13 @@ router = APIRouter(prefix="/api/application", tags=["application"])
 class ExtractRequest(BaseModel):
     text: str
 
+class EnhanceApplicationRequest(BaseModel):
+    application_type: str
+    company: str
+    enhancement_focus: str
+    resume_content: str
+    application_content: str
+
 @router.post("/extract")
 async def extract_application(request: ExtractRequest):
     try:
@@ -19,6 +26,38 @@ async def extract_application(request: ExtractRequest):
         return result
     except Exception as e:
         logging.error(f"Error in extract_application: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/enhance")
+async def enhance_application(request: EnhanceApplicationRequest):
+    try:
+        logging.info("Received enhancement request")
+        prompt = f"""
+        Resume Content:
+        {request.resume_content}
+
+        Job Application Form Content:
+        {request.application_content}
+
+        Application Type: {request.application_type}
+        Company: {request.company}
+        Enhancement Focus: {request.enhancement_focus}
+
+        Based on the resume and job application form content provided, generate a tailored response for the application form fields.
+        Ensure the response aligns with the enhancement focus and is professional, concise, and truthful.
+        """
+
+        if core_service.openai_client:
+            enhanced_content = await core_service.generate_openai_response(prompt, core_service.context_settings)
+        else:
+            enhanced_content = await core_service.generate_ollama_response(prompt)
+
+        return {
+            "status": "success",
+            "enhanced_content": enhanced_content
+        }
+    except Exception as e:
+        logging.error(f"Error in enhance_application: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/last_extract")
