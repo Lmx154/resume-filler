@@ -20,11 +20,16 @@ async def upload_resume(file: UploadFile = File(...)):
             text_content = content.decode()
         parsed_data = file_service.parse_resume(text_content)
         
+        # Store both raw content and parsed data
         await core_service.process_resume(Resume(
             content=text_content,
             file_name=file.filename,
             file_type=file.content_type
         ))
+        core_service.last_resume.update({
+            "parsed_sections": parsed_data["parsed_sections"],
+            "metadata": parsed_data["metadata"]
+        })
         
         return {
             "status": "success",
@@ -34,6 +39,17 @@ async def upload_resume(file: UploadFile = File(...)):
         }
     except Exception as e:
         return {"status": "error", "message": str(e)}
+
+@router.get("/upload")
+async def get_last_uploaded_resume():
+    last_resume = core_service.last_resume
+    if not last_resume or "parsed_sections" not in last_resume:
+        return {"status": "pending", "message": "No resume uploaded yet"}
+    return {
+        "status": "success",
+        "parsed_sections": last_resume["parsed_sections"],
+        "metadata": last_resume["metadata"]
+    }
 
 @router.get("/last_upload")
 async def get_last_upload():

@@ -14,7 +14,7 @@ class CoreService:
         self.api_base = None
         self.context_settings = None
         self.last_extraction: Dict = {}  # Store last extraction globally
-        self.last_resume: Dict = {}  # Add this line
+        self.last_resume: Dict = {}  # This will now store both raw and parsed data
 
     # AI-related methods (from ai_service.py)
     def init_openai(self, api_key: str, api_base: str = None):
@@ -48,7 +48,13 @@ class CoreService:
 
     # Resume-related methods (from resume_service.py)
     async def process_resume(self, resume: Resume) -> dict:
-        result = {"status": "success", "content": resume.content}
+        result = {
+            "status": "success",
+            "content": resume.content,
+            # Initialize parsed data sections that will be updated later
+            "parsed_sections": {},
+            "metadata": {}
+        }
         self.last_resume.clear()
         self.last_resume.update(result)  # Store the last uploaded resume
         return result
