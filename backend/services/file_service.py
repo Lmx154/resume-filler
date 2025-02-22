@@ -18,10 +18,20 @@ class FileService:
         else:
             raise ValueError(f"Unsupported file type: {ext}")
 
+    # New helper to read PDF from a file-like object (bytes)
+    def _read_pdf_from_bytes(self, file_obj) -> str:
+        reader = PyPDF2.PdfReader(file_obj)
+        return ' '.join(page.extract_text() for page in reader.pages if page.extract_text())
+
+    # New helper to read DOCX from a file-like object (bytes)
+    def _read_docx_from_bytes(self, file_obj) -> str:
+        doc = docx.Document(file_obj)
+        return ' '.join(paragraph.text for paragraph in doc.paragraphs)
+
     def _read_pdf(self, file_path: str) -> str:
         with open(file_path, 'rb') as file:
             reader = PyPDF2.PdfReader(file)
-            return ' '.join(page.extract_text() for page in reader.pages)
+            return ' '.join(page.extract_text() for page in reader.pages if page.extract_text())
 
     def _read_docx(self, file_path: str) -> str:
         doc = docx.Document(file_path)

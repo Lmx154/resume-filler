@@ -1,4 +1,5 @@
 from fastapi import APIRouter, UploadFile, File
+from pydantic import BaseModel
 from models.schemas import Resume, EnhanceRequest, ContextSettings, AIConfig
 from services.core_service import core_service
 from services.file_service import file_service
@@ -11,11 +12,11 @@ async def upload_resume(file: UploadFile = File(...)):
     try:
         content = await file.read()
         if file.content_type == 'application/pdf' or file.filename.endswith('.pdf'):
-            # Wrap bytes in a BytesIO object for PyPDF2
-            text_content = file_service._read_pdf(io.BytesIO(content))
+            # Use new helper to read PDF bytes
+            text_content = file_service._read_pdf_from_bytes(io.BytesIO(content))
         elif file.content_type == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' or file.filename.endswith('.docx'):
-            # Wrap bytes in a BytesIO object for python-docx
-            text_content = file_service._read_docx(io.BytesIO(content))
+            # Use new helper to read DOCX bytes
+            text_content = file_service._read_docx_from_bytes(io.BytesIO(content))
         else:
             text_content = content.decode()
         parsed_data = file_service.parse_resume(text_content)
@@ -72,3 +73,31 @@ async def update_ai_config(config: AIConfig):
     if config.api_key:
         core_service.init_openai(config.api_key, config.endpoint)
     return {"status": "success"}
+
+class FilePathRequest(BaseModel):
+    file_path: str
+
+@router.post("/read-from-path")
+async def read_resume_from_path(request: FilePathRequest):
+    try:
+        # Read the file content from disk (heavy load remains on backend)
+        text_content = file_service.read_file_content(request.file_path)
+        parsed_data = file_service.parse_resume(text_content)
+        # Update the last_resume data for later retrieval if needed
+        await core_service.process_resume(Resume(
+            content=text_content,
+            file_name=request.file_path,
+            file_type= request.file_path.split('.')[-1]
+        ))
+        core_service.last_resume.update({
+            "parsed_sections": parsed_data["parsed_sections"],
+            "metadata": parsed_data["metadata"]
+        })
+        return {
+            "status": "success",
+            "parsed_sections": parsed_data["parsed_sections"],
+            "summary": parsed_data["summary"],
+            "metadata": parsed_data["metadata"]
+        }
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
