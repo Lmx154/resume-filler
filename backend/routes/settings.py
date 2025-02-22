@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
 from services.config_service import config_service
-from services.ai_service import ai_service
+from services.core_service import core_service  # Correct import
 
 router = APIRouter(prefix="/api/settings", tags=["settings"])
 
@@ -23,8 +23,7 @@ async def save_openai_settings(settings: OpenAISettings):
         config_service.update_config("api_base", settings.api_base)
         config_service.update_config("api_key", settings.api_key)
         
-        # Initialize AI service with new settings
-        ai_service.init_openai(settings.api_key, settings.api_base)
+        core_service.init_openai(settings.api_key, settings.api_base)
         
         return {"status": "success"}
     except Exception as e:

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from services.core_service import application_service, last_extraction
+from services.core_service import core_service  # Correct import
 import logging
 
 router = APIRouter(prefix="/api/application", tags=["application"])
@@ -12,14 +12,10 @@ class ExtractRequest(BaseModel):
 async def extract_application(request: ExtractRequest):
     try:
         logging.info("Received extraction request")
-        result = application_service.process_extracted_text(request.text)
+        result = core_service.process_extracted_text(request.text)  # Use core_service instance
         logging.info(f"Result: {result['status']}")
         
-        # Verify the global variable is updated
-        global last_extraction
-        if last_extraction != result:
-            logging.warning("last_extraction not updated properly")
-        
+        # No need for global check since core_service manages last_extraction internally
         return result
     except Exception as e:
         logging.error(f"Error in extract_application: {str(e)}")
@@ -27,7 +23,7 @@ async def extract_application(request: ExtractRequest):
 
 @router.get("/last_extract")
 async def get_last_extraction():
-    global last_extraction
+    last_extraction = core_service.last_extraction  # Access via instance
     logging.info(f"Getting last extraction. Full content: {last_extraction}")
     
     if not last_extraction:
@@ -38,5 +34,5 @@ async def get_last_extraction():
         logging.error(f"Invalid last_extraction structure: {last_extraction.keys()}")
         return {"status": "error", "message": "Invalid data structure"}
     
-    logging.info(f"Returning extraction with text length: {len(last_extraction.get('display_text', ''))}")    
+    logging.info(f"Returning extraction with text length: {len(last_extraction.get('display_text', ''))}")
     return last_extraction

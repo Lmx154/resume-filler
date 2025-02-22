@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routes import resume, system, application
+from routes import resume, system, application # Add settings
 from config import settings
 
 app = FastAPI(title=settings.app_name)

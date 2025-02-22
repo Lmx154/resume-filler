@@ -2,6 +2,7 @@ from fastapi import APIRouter, UploadFile, File
 from models.schemas import Resume, EnhanceRequest, ContextSettings, AIConfig
 from services.core_service import core_service
 from services.file_service import file_service
+import io
 
 router = APIRouter(prefix="/api/resume", tags=["resume"])
 
@@ -10,9 +11,11 @@ async def upload_resume(file: UploadFile = File(...)):
     try:
         content = await file.read()
         if file.content_type == 'application/pdf' or file.filename.endswith('.pdf'):
-            text_content = file_service._read_pdf(content)
+            # Wrap bytes in a BytesIO object for PyPDF2
+            text_content = file_service._read_pdf(io.BytesIO(content))
         elif file.content_type == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' or file.filename.endswith('.docx'):
-            text_content = file_service._read_docx(content)
+            # Wrap bytes in a BytesIO object for python-docx
+            text_content = file_service._read_docx(io.BytesIO(content))
         else:
             text_content = content.decode()
         parsed_data = file_service.parse_resume(text_content)
