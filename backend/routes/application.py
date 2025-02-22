@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from services.application_service import application_service, last_extraction
+from services.core_service import application_service, last_extraction
 import logging
 
 router = APIRouter(prefix="/api/application", tags=["application"])
