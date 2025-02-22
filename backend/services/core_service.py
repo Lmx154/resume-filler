@@ -26,7 +26,8 @@ class CoreService:
 
     async def generate_openai_response(self, prompt: str, context: dict) -> str:
         try:
-            response = await self.openai_client.chat.completions.create(
+            # Use the asynchronous method from the OpenAI SDK
+            response = await self.openai_client.ChatCompletion.acreate(
                 model="gpt-3.5-turbo",
                 messages=[
                     {"role": "system", "content": "You are a professional resume writer."},
@@ -35,8 +36,9 @@ class CoreService:
             )
             return response.choices[0].message.content
         except Exception as e:
-            logging.error(f"OpenAI API error: {str(e)}")
-            raise
+            logging.error(f"OpenAI API error: {e}")
+            # Re-raise with more detail so the client sees the error message:
+            raise Exception(f"Failed to generate improvements: {e}")
 
     async def generate_ollama_response(self, prompt: str, model: str = "llama2") -> str:
         async with httpx.AsyncClient() as client:

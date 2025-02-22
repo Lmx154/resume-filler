@@ -450,11 +450,19 @@ window.handleFileSelect = () => {
 window.handleApplyAPISettings = async () => {
   const apiBase = document.getElementById('api-base').value;
   const apiKey = document.getElementById('api-key').value;
-
   try {
     if (apiKey) {
-      ai_service.init_openai(apiKey, apiBase);
-      alert('API settings updated successfully!');
+      const response = await fetch('http://localhost:8000/api/settings/openai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ api_base: apiBase, api_key: apiKey })
+      });
+      const result = await response.json();
+      if(result.status === "success") {
+        alert('API settings updated successfully!');
+      } else {
+        throw new Error(result.message);
+      }
     }
   } catch (error) {
     console.error('Error updating API settings:', error);
