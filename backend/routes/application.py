@@ -50,8 +50,9 @@ def enhance_application(request: EnhanceApplicationRequest):
         Company Culture Notes: {request.company_culture}
         {additional_info_str}
 
-        Using the resume content and any additional information provided, generate responses to auto-complete the job application form fields based on the scraped content.
-        Ensure the responses align with the enhancement focus, incorporate target keywords, reflect the company culture, include any additional information, and are professional, concise, and truthful.
+        Using the resume content and any additional information provided, analyze the scraped job application form content to identify all fields requiring auto-completion (e.g., personal information, education, skills, experience, additional questions, etc.).
+        Generate responses to auto-complete only these fields, ensuring the responses are derived from the resume, align with the enhancement focus, incorporate target keywords, reflect the company culture, include any additional information, and are professional, concise, and truthful.
+        Return only the field names and their corresponding values in plain text format, one per line, like this: 'Field: Value'. Do not include any additional text, formatting (e.g., Markdown), or explanations.
         """
         enhanced_content = core_service.generate_openai_response(prompt)
         return {"status": "success", "enhanced_content": enhanced_content}
