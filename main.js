@@ -98,11 +98,11 @@ function createFileInput() {
 function getSubmenuContent(submenu) {
   const contents = {
     'Upload Resume': `
-      <div class="max-w-4xl p-6">
+      <div class="w-full p-6">
         <div class="grid grid-cols-2 gap-6">
           <div class="bg-yale_blue-300 rounded-lg p-6 border border-yale_blue-400">
             <p class="text-lemon_chiffon-500 mb-4">Upload your resume to begin.</p>
-            <div class="border-2 border-dashed border-yale_blue-400 rounded-lg p-8 text-center bg-yale_blue-300">
+            <div class="border-2 border-dashed border-yale_blue-400 rounded-lg p-8 text-center bg-yale_blue-300 w-full">
               <button onclick="window.handleFileSelect()" class="bg-tomato-500 text-white px-6 py-3 rounded-lg hover:bg-tomato-600">Choose File</button>
               <p class="mt-2 text-sm text-lemon_chiffon-400">PDF, DOCX, or TXT files accepted</p>
             </div>
@@ -115,7 +115,8 @@ function getSubmenuContent(submenu) {
                 <button onclick="window.clearResumeData()" class="text-sm text-tomato-500 hover:text-tomato-600">Clear</button>
               </div>
             </div>
-            <div id="resume-data" class="bg-yale_blue-200 rounded-lg p-4 h-[300px] overflow-auto">
+            <!-- Changed fixed height to h-[70vh] for full vertical space -->
+            <div id="resume-data" class="bg-yale_blue-200 rounded-lg p-4 h-[70vh] w-full overflow-auto">
               <p class="text-lemon_chiffon-500 text-center">No resume loaded yet...</p>
             </div>
           </div>
@@ -123,11 +124,11 @@ function getSubmenuContent(submenu) {
       </div>
     `,
     'Upload Application': `
-      <div class="max-w-4xl p-6">
+      <div class="w-full p-6">
         <div class="grid grid-cols-2 gap-6">
           <div class="bg-yale_blue-300 rounded-lg p-6 border border-yale_blue-400">
             <p class="text-lemon_chiffon-500 mb-4">Upload your scraped job application data.</p>
-            <div class="border-2 border-dashed border-yale_blue-400 rounded-lg p-8 text-center bg-yale_blue-300">
+            <div class="border-2 border-dashed border-yale_blue-400 rounded-lg p-8 text-center bg-yale_blue-300 w-full">
               <button onclick="window.handleFileSelect()" class="bg-tomato-500 text-white px-6 py-3 rounded-lg hover:bg-tomato-600">Choose File</button>
               <p class="mt-2 text-sm text-lemon_chiffon-400">PDF, DOCX, or TXT files accepted</p>
             </div>
@@ -140,7 +141,8 @@ function getSubmenuContent(submenu) {
                 <button onclick="window.clearExtensionData()" class="text-sm text-tomato-500 hover:text-tomato-600">Clear</button>
               </div>
             </div>
-            <div id="extension-data" class="bg-yale_blue-200 rounded-lg p-4 h-[300px] overflow-auto">
+            <!-- Changed height to h-[70vh] -->
+            <div id="extension-data" class="bg-yale_blue-200 rounded-lg p-4 h-[70vh] w-full overflow-auto">
               <p class="text-lemon_chiffon-500 text-center">Waiting for application data...</p>
             </div>
           </div>
@@ -148,7 +150,7 @@ function getSubmenuContent(submenu) {
       </div>
     `,
     'Enhance Application': `
-      <div class="max-w-4xl p-6">
+      <div class="w-full p-6">
         <div class="grid grid-cols-2 gap-6">
           <div class="space-y-4">
             <p class="text-lemon_chiffon-500 mb-4">Generate auto-fill responses for your scraped job application.</p>
@@ -201,7 +203,8 @@ function getSubmenuContent(submenu) {
                 </button>
               </div>
             </div>
-            <div id="ai-response" class="bg-yale_blue-200 rounded-lg p-4 h-[400px] overflow-auto">
+            <!-- Changed height to h-[70vh] -->
+            <div id="ai-response" class="bg-yale_blue-200 rounded-lg p-4 h-[70vh] w-full overflow-auto">
               <p class="text-lemon_chiffon-500 text-center">AI response will appear here...</p>
             </div>
           </div>
