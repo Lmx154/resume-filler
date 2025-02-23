@@ -3,6 +3,7 @@ import './style.css'
 // Create the main navigation state
 let currentPage = 'resume';
 let currentSubmenu = '';
+let openDropdown = ''; // new global variable for dropdown state
 
 const pages = {
   resume: { title: 'Resume', submenus: ['Upload Resume'] },
@@ -32,39 +33,42 @@ function renderContent() {
     </div>
   `;
 
-  const submenuContent = currentSubmenu ? `
-    <div class="p-6">
-      <h2 class="text-2xl font-semibold mb-4 text-lemon_chiffon-500">${currentSubmenu}</h2>
-      ${getSubmenuContent(currentSubmenu)}
-    </div>
-  ` : welcomeContent;
+  // New top nav bar with click-to-toggle dropdowns
+  const topNavbar = `
+    <nav class="bg-yale_blue-400 text-white px-4 py-2 flex items-center gap-4">
+      ${Object.entries(pages).map(([key, value]) => `
+        <div class="relative">
+          <button onclick="window.toggleDropdown('${key}')" class="menu-button hover:font-bold">
+            ${value.title} ${value.submenus && value.submenus.length ? '<span class="ml-1">&#x25BC;</span>' : ''}
+          </button>
+          ${value.submenus && value.submenus.length ? `
+            <div class="dropdown ${openDropdown === key ? 'block' : 'hidden'} absolute left-0 mt-1 bg-yale_blue-300 text-lemon_chiffon-500 shadow-md">
+              ${value.submenus.map(submenu => `
+                <div onclick="window.handleSubmenu('${submenu}')" class="px-4 py-2 hover:bg-yale_blue-400 cursor-pointer">
+                  ${submenu}
+                </div>
+              `).join('')}
+            </div>
+          ` : ''}
+        </div>
+      `).join('')}
+    </nav>
+  `;
 
   return `
     <div class="min-h-screen bg-yale_blue-200">
       <header class="bg-yale_blue-500 text-white py-4 px-6 shadow-lg">
         <h1 class="text-2xl font-bold">Resume Filler</h1>
       </header>
-      <div class="flex">
-        <nav class="w-48 bg-yale_blue-400 h-[calc(100vh-64px)]">
-          ${Object.entries(pages).map(([key, value]) => `
-            <div class="menu-item ${currentPage === key ? 'active' : ''}"
-                 onclick="window.handleNavigation('${key}')">
-              ${value.title}
-            </div>
-          `).join('')}
-        </nav>
-        <nav class="w-56 bg-yale_blue-300 h-[calc(100vh-64px)] border-r border-yale_blue-400">
-          ${pages[currentPage].submenus.map(submenu => `
-            <div class="submenu-item ${currentSubmenu === submenu ? 'bg-yale_blue-400' : ''}"
-                 onclick="window.handleSubmenu('${submenu}')">
-              ${submenu}
-            </div>
-          `).join('')}
-        </nav>
-        <main class="flex-1 bg-yale_blue-200">
-          ${submenuContent}
-        </main>
-      </div>
+      ${topNavbar}
+      <main class="p-6">
+        ${currentSubmenu ? `
+          <div>
+            <h2 class="text-2xl font-semibold mb-4 text-lemon_chiffon-500">${currentSubmenu}</h2>
+            ${getSubmenuContent(currentSubmenu)}
+          </div>
+        ` : welcomeContent}
+      </main>
     </div>
   `;
 }
@@ -277,6 +281,7 @@ window.handleNavigation = (page) => {
 
 window.handleSubmenu = (submenu) => {
   currentSubmenu = submenu;
+  openDropdown = ''; // collapse dropdown after selection
   document.querySelector('#app').innerHTML = renderContent();
   initAdditionalInfo();
   if (submenu === 'Upload Application') setTimeout(() => window.handleRefreshData(), 500);
@@ -460,6 +465,19 @@ function initAdditionalInfo() {
     addBtn.addEventListener('click', () => addAdditionalInfoItem());
   }
 }
+
+// New function to toggle the dropdown on click
+window.toggleDropdown = (page) => {
+  if (pages[page].submenus && pages[page].submenus.length) {
+    openDropdown = openDropdown === page ? '' : page;
+  } else {
+    currentPage = page;
+    currentSubmenu = '';
+    openDropdown = ''; // reset dropdown if no submenu
+  }
+  document.querySelector('#app').innerHTML = renderContent();
+  initAdditionalInfo();
+};
 
 // Initial render
 document.querySelector('#app').innerHTML = renderContent();
