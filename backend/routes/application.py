@@ -16,7 +16,7 @@ class EnhanceApplicationRequest(BaseModel):
     application_content: str
 
 @router.post("/extract")
-async def extract_application(request: ExtractRequest):
+def extract_application(request: ExtractRequest):
     try:
         logging.info("Received extraction request")
         result = core_service.process_extracted_text(request.text)  # Use core_service instance
@@ -29,7 +29,7 @@ async def extract_application(request: ExtractRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/enhance")
-async def enhance_application(request: EnhanceApplicationRequest):
+def enhance_application(request: EnhanceApplicationRequest):
     try:
         logging.info("Received enhancement request")
         prompt = f"""
@@ -46,12 +46,7 @@ async def enhance_application(request: EnhanceApplicationRequest):
         Based on the resume and job application form content provided, generate a tailored response for the application form fields.
         Ensure the response aligns with the enhancement focus and is professional, concise, and truthful.
         """
-
-        if core_service.openai_client:
-            enhanced_content = await core_service.generate_openai_response(prompt, core_service.context_settings)
-        else:
-            enhanced_content = await core_service.generate_ollama_response(prompt)
-
+        enhanced_content = core_service.generate_openai_response(prompt, core_service.context_settings)
         return {
             "status": "success",
             "enhanced_content": enhanced_content
@@ -61,7 +56,7 @@ async def enhance_application(request: EnhanceApplicationRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/last_extract")
-async def get_last_extraction():
+def get_last_extraction():
     last_extraction = core_service.last_extraction  # Access via instance
     logging.info(f"Getting last extraction. Full content: {last_extraction}")
     

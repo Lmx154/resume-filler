@@ -659,7 +659,14 @@ window.handleGenerateImprovements = async () => {
     }
   } catch (error) {
     console.error('Error generating improvements:', error);
-    alert(`Error generating improvements: ${error.message}`);
+    const aiResponse = document.getElementById('ai-response');
+    if (aiResponse) {
+      aiResponse.innerHTML = `
+        <div class="text-tomato-500">
+          Error: ${error.message}
+        </div>
+      `;
+    }
   }
 };
 
