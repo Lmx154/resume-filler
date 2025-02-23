@@ -177,10 +177,12 @@ function getSubmenuContent(submenu) {
             </div>
             <div class="bg-yale_blue-300 p-4 rounded-lg border border-yale_blue-400">
               <h3 class="font-semibold text-naples_yellow-500">Additional Information</h3>
-              <div class="grid grid-cols-2 gap-4">
-                <input id="additional-info-key" class="w-full mt-2 p-2 border border-yale_blue-500 rounded bg-yale_blue-200 text-lemon_chiffon-500" placeholder="e.g., GPA">
-                <input id="additional-info-value" class="w-full mt-2 p-2 border border-yale_blue-500 rounded bg-yale_blue-200 text-lemon_chiffon-500" placeholder="e.g., 3.5">
+              <div id="additional-info-container" class="max-h-32 overflow-y-auto space-y-2">
+                <!-- additional info items will be added here -->
               </div>
+              <button id="add-additional-info" class="mt-2 bg-tomato-500 text-white px-4 py-2 rounded hover:bg-tomato-600">
+                New Item
+              </button>
             </div>
             <button onclick="window.handleGenerateImprovements()" class="bg-tomato-500 text-white px-6 py-3 rounded-lg hover:bg-tomato-600 transition-colors w-full">
               Generate Auto-Fill Responses
@@ -270,11 +272,13 @@ window.handleNavigation = (page) => {
   currentPage = page;
   currentSubmenu = '';
   document.querySelector('#app').innerHTML = renderContent();
+  initAdditionalInfo();
 };
 
 window.handleSubmenu = (submenu) => {
   currentSubmenu = submenu;
   document.querySelector('#app').innerHTML = renderContent();
+  initAdditionalInfo();
   if (submenu === 'Upload Application') setTimeout(() => window.handleRefreshData(), 500);
   else if (submenu === 'Upload Resume') setTimeout(() => window.handleRefreshResumeData(), 500);
 };
@@ -390,9 +394,17 @@ window.handleGenerateImprovements = async () => {
     const industryFocus = document.getElementById('industry-focus').value;
     const targetKeywords = document.getElementById('target-keywords').value;
     const companyCulture = document.getElementById('company-culture').value;
-    const additionalInfoKey = document.getElementById('additional-info-key').value;
-    const additionalInfoValue = document.getElementById('additional-info-value').value;
-    const additionalInfo = additionalInfoKey && additionalInfoValue ? { [additionalInfoKey]: additionalInfoValue } : {};
+
+    // Gather additional info items from the new container
+    const additionalInfoItems = document.querySelectorAll('#additional-info-container > div');
+    let additionalInfo = {};
+    additionalInfoItems.forEach(item => {
+      const keyInput = item.children[0];
+      const valueInput = item.children[1];
+      if(keyInput.value && valueInput.value){
+        additionalInfo[keyInput.value] = valueInput.value;
+      }
+    });
 
     const requestBody = {
       enhancement_focus: enhancementFocus,
@@ -424,5 +436,31 @@ window.handleGenerateImprovements = async () => {
   }
 };
 
+// New helper function to add additional info items (updated)
+function addAdditionalInfoItem(key = '', value = '') {
+  const container = document.getElementById('additional-info-container');
+  if (!container) return;
+  const item = document.createElement('div');
+  item.className = "flex gap-2";
+  item.innerHTML = `
+    <input type="text" class="flex-1 p-2 border border-yale_blue-500 rounded bg-yale_blue-200 text-lemon_chiffon-500" placeholder="e.g. GPA" value="${key}">
+    <input type="text" class="flex-1 p-2 border border-yale_blue-500 rounded bg-yale_blue-200 text-lemon_chiffon-500" placeholder="e.g. 3.4" value="${value}">
+    <button class="bg-tomato-500 text-white px-2 rounded delete-additional-info">Delete</button>
+  `;
+  container.appendChild(item);
+  item.querySelector('.delete-additional-info').addEventListener('click', () => {
+    container.removeChild(item);
+  });
+}
+
+// Initializes the Additional Information UI after render
+function initAdditionalInfo() {
+  const addBtn = document.getElementById('add-additional-info');
+  if(addBtn){
+    addBtn.addEventListener('click', () => addAdditionalInfoItem());
+  }
+}
+
 // Initial render
 document.querySelector('#app').innerHTML = renderContent();
+initAdditionalInfo();
