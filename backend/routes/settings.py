@@ -16,7 +16,7 @@ def get_openai_settings():
     return {
         "api_base": config.get("api_base", ""),
         "api_key": config.get("api_key", ""),
-        "model": config.get("model", "gpt-3.5-turbo-16k")  # Default model
+        "model": config.get("model", "gpt-4o-mini")  # Default model
     }
 
 @router.post("/openai")
