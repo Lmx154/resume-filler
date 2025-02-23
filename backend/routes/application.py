@@ -1,3 +1,4 @@
+from typing import Optional
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from services.core_service import core_service
@@ -15,6 +16,7 @@ class EnhanceApplicationRequest(BaseModel):
     industry_focus: str
     target_keywords: str
     company_culture: str
+    additional_info: Optional[dict] = None
 
 @router.post("/extract")
 def extract_application(request: ExtractRequest):
@@ -31,6 +33,10 @@ def extract_application(request: ExtractRequest):
 def enhance_application(request: EnhanceApplicationRequest):
     try:
         logging.info("Received enhancement request")
+        additional_info_str = ""
+        if request.additional_info and isinstance(request.additional_info, dict):
+            additional_info_str = "\nAdditional Information: " + ", ".join(f"{k}: {v}" for k, v in request.additional_info.items())
+
         prompt = f"""
         Resume Content:
         {request.resume_content}
@@ -42,15 +48,13 @@ def enhance_application(request: EnhanceApplicationRequest):
         Industry Focus: {request.industry_focus}
         Target Keywords: {request.target_keywords}
         Company Culture Notes: {request.company_culture}
+        {additional_info_str}
 
-        Using the resume content, generate responses to auto-fill the job application form fields based on the scraped content.
-        Ensure the responses align with the enhancement focus, incorporate target keywords, reflect the company culture, and are professional, concise, and truthful.
+        Using the resume content and any additional information provided, generate responses to auto-complete the job application form fields based on the scraped content.
+        Ensure the responses align with the enhancement focus, incorporate target keywords, reflect the company culture, include any additional information, and are professional, concise, and truthful.
         """
         enhanced_content = core_service.generate_openai_response(prompt)
-        return {
-            "status": "success",
-            "enhanced_content": enhanced_content
-        }
+        return {"status": "success", "enhanced_content": enhanced_content}
     except Exception as e:
         logging.error(f"Error in enhance_application: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
