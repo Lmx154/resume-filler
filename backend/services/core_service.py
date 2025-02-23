@@ -1,7 +1,7 @@
 import httpx
 from openai import OpenAI, OpenAIError
 from config import settings
-from models.schemas import Resume, EnhanceRequest, ContextSettings
+from models.schemas import Resume, EnhanceRequest
 from typing import Dict
 from datetime import datetime
 import re
@@ -12,7 +12,6 @@ class CoreService:
         self.openai_client = None
         self.ollama_base_url = settings.ollama_base_url
         self.api_base = settings.openai_api_base
-        self.context_settings = None
         self.last_extraction: Dict = {}
         self.last_resume: Dict = {}
 
@@ -32,20 +31,13 @@ class CoreService:
             base_url=self.api_base
         )
 
-    def generate_openai_response(self, prompt: str, context: dict = None) -> str:
+    def generate_openai_response(self, prompt: str) -> str:  # Removed context parameter
         try:
             if not self.openai_client:
                 raise Exception("OpenAI client not initialized")
             
-            system_content = "You are a professional resume writer."
-            if context:
-                system_content += "\nAdditional context:"
-                system_content += f"\n- Career Level: {context.career_level}"
-                system_content += f"\n- Key Skills: {', '.join(context.key_skills)}"
-                system_content += f"\n- Preferred Industries: {', '.join(context.preferred_industries)}"
-            
             messages = [
-                {"role": "system", "content": system_content},
+                {"role": "system", "content": "You are a professional resume writer."},
                 {"role": "user", "content": prompt}
             ]
             logging.info(f"Sending request to OpenAI with messages: {messages}")
@@ -89,7 +81,7 @@ class CoreService:
     def enhance_resume(self, request: EnhanceRequest) -> str:
         prompt = self._create_enhancement_prompt(request)
         if self.openai_client:
-            return self.generate_openai_response(prompt, self.context_settings)
+            return self.generate_openai_response(prompt)
         return self.generate_ollama_response(prompt)
 
     def _create_enhancement_prompt(self, request: EnhanceRequest) -> str:
@@ -100,9 +92,6 @@ class CoreService:
         Original Content: {request.resume_content}
         Please enhance this content to better match the job requirements while maintaining truthfulness.
         """
-
-    def update_context(self, settings: ContextSettings):
-        self.context_settings = settings
 
     def process_extracted_text(self, text: str) -> Dict:
         try:

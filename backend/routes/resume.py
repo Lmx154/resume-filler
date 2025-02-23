@@ -1,6 +1,6 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException
 from pydantic import BaseModel
-from models.schemas import Resume, EnhanceRequest, ContextSettings, AIConfig
+from models.schemas import Resume, EnhanceRequest, AIConfig
 from services.core_service import core_service
 from services.file_service import file_service
 import io
@@ -58,11 +58,6 @@ def get_last_upload():
 @router.post("/enhance")
 def enhance_resume(request: EnhanceRequest):
     return core_service.enhance_resume(request)
-
-@router.post("/context")
-def update_context(settings: ContextSettings):
-    core_service.update_context(settings)
-    return {"status": "success"}
 
 @router.post("/ai-config")
 def update_ai_config(config: AIConfig):

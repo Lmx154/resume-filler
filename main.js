@@ -6,19 +6,16 @@ let currentSubmenu = '';
 
 const pages = {
   resume: {
-    title: 'Resume Tools',
+    title: 'Resume',  // Renamed from "Resume Tools"
     submenus: [
-      'Upload Resume',
-      'Enhance Resume',
-      'Resume Context'
+      'Upload Resume'
     ]
   },
   application: {
-    title: 'Application Tools',
+    title: 'Application',  // Renamed from "Application Tools"
     submenus: [
       'Upload Application',
-      'Enhance Application',
-      'Application Context'
+      'Enhance Application'
     ]
   },
   settings: {
@@ -36,27 +33,18 @@ function renderContent() {
       <div class="bg-yale_blue-300 rounded-lg p-8 shadow-xl border border-yale_blue-400">
         <h2 class="text-4xl font-bold text-lemon_chiffon-500 mb-6">Welcome to Resume Filler!</h2>
         <p class="text-lg text-lemon_chiffon-400 mb-6">
-          Transform your job application process using AI assistance. This tool helps you generate tailored responses 
-          for job applications while keeping your data private and secure on your local machine.
+          Automate your job application process using AI. Upload your resume and job application data, 
+          then generate tailored responses to fill out forms securely on your local machine.
         </p>
         <div class="grid grid-cols-2 gap-6 mb-8">
           <div class="bg-yale_blue-400 p-6 rounded-lg border border-yale_blue-500">
             <h3 class="text-xl font-semibold text-naples_yellow-500 mb-3">Local Processing</h3>
-            <p class="text-lemon_chiffon-500">Your resume data stays on your computer. The application processes everything locally, ensuring your sensitive information remains private.</p>
+            <p class="text-lemon_chiffon-500">Your data stays on your computer, ensuring privacy.</p>
           </div>
           <div class="bg-yale_blue-400 p-6 rounded-lg border border-yale_blue-500">
-            <h3 class="text-xl font-semibold text-naples_yellow-500 mb-3">AI Integration</h3>
-            <p class="text-lemon_chiffon-500">Choose between OpenAI API or local AI models like Ollama to generate tailored responses for job applications.</p>
+            <h3 class="text-xl font-semibold text-naples_yellow-500 mb-3">AI Assistance</h3>
+            <p class="text-lemon_chiffon-500">Leverage AI to craft responses for job applications.</p>
           </div>
-        </div>
-        <div class="bg-yale_blue-400 p-6 rounded-lg border border-yale_blue-500">
-          <h3 class="text-xl font-semibold text-naples_yellow-500 mb-3">Key Features</h3>
-          <ul class="list-disc list-inside text-lemon_chiffon-500 space-y-2">
-            <li>Local data processing for privacy</li>
-            <li>Flexible AI model selection</li>
-            <li>Customizable response generation</li>
-            <li>Secure resume storage</li>
-          </ul>
         </div>
       </div>
     </div>
@@ -117,29 +105,7 @@ async function processResumeFile(file) {
     
     const result = await response.json();
     if (result.status === 'success') {
-      // Refresh the parsed resume display after upload
       await handleRefreshResumeData();
-      // Optionally update the AI response container if needed
-      const aiResponse = document.getElementById('ai-response');
-      if (aiResponse) {
-        const formattedContent = `
-          <div class="text-lemon_chiffon-500">
-            <div class="mb-4 grid grid-cols-2 gap-4">
-              <div>
-                <span class="font-semibold">Words:</span> ${result.metadata.word_count}
-                <span class="ml-4 font-semibold">Read Time:</span> ${result.metadata.estimated_read_time}m
-              </div>
-              <div>
-                <span class="font-semibold">Sentences:</span> ${result.metadata.sentence_count}
-              </div>
-            </div>
-            <div class="whitespace-pre-wrap font-mono text-sm bg-yale_blue-300 p-4 rounded-lg max-h-[400px] overflow-y-auto">
-              ${JSON.stringify(result.parsed_sections, null, 2)}
-            </div>
-          </div>
-        `;
-        aiResponse.innerHTML = formattedContent;
-      }
     }
   } catch (error) {
     console.error('Error processing resume:', error);
@@ -166,9 +132,8 @@ function getSubmenuContent(submenu) {
     'Upload Resume': `
       <div class="max-w-4xl p-6">
         <div class="grid grid-cols-2 gap-6">
-          <!-- File Upload Section -->
           <div class="bg-yale_blue-300 rounded-lg p-6 border border-yale_blue-400">
-            <p class="text-lemon_chiffon-500 mb-4">Upload your resume to begin. The file will be processed and stored locally on your machine.</p>
+            <p class="text-lemon_chiffon-500 mb-4">Upload your resume to begin.</p>
             <div class="border-2 border-dashed border-yale_blue-400 rounded-lg p-8 text-center bg-yale_blue-300">
               <button onclick="window.handleFileSelect()" class="bg-tomato-500 text-white px-6 py-3 rounded-lg hover:bg-tomato-600 transition-colors">
                 Choose File
@@ -176,8 +141,6 @@ function getSubmenuContent(submenu) {
               <p class="mt-2 text-sm text-lemon_chiffon-400">PDF, DOCX, or TXT files accepted</p>
             </div>
           </div>
-
-          <!-- Parsed Resume Section -->
           <div class="bg-yale_blue-300 rounded-lg p-6 border border-yale_blue-400">
             <div class="flex justify-between items-center mb-4">
               <h3 class="text-xl font-semibold text-naples_yellow-500">Parsed Resume</h3>
@@ -197,64 +160,11 @@ function getSubmenuContent(submenu) {
         </div>
       </div>
     `,
-    // ... (other submenu contents unchanged) ...
-    'Enhance Resume': `
-      <div class="max-w-2xl p-6">
-        <p class="text-lemon_chiffon-500 mb-4">Generate tailored responses for job applications using AI assistance.</p>
-        <div class="space-y-4">
-          <div class="bg-yale_blue-300 p-4 rounded-lg border border-yale_blue-400">
-            <h3 class="font-semibold text-naples_yellow-500">Target Job Title</h3>
-            <input type="text" class="w-full mt-2 p-2 border border-yale_blue-500 rounded bg-yale_blue-200 text-lemon_chiffon-500" placeholder="e.g., Senior Software Engineer">
-          </div>
-          <div class="bg-yale_blue-300 p-4 rounded-lg border border-yale_blue-400">
-            <h3 class="font-semibold text-naples_yellow-500">Company</h3>
-            <input type="text" class="w-full mt-2 p-2 border border-yale_blue-500 rounded bg-yale_blue-200 text-lemon_chiffon-500" placeholder="e.g., Tech Corp">
-          </div>
-          <div class="bg-yale_blue-300 p-4 rounded-lg border border-yale_blue-400">
-            <h3 class="font-semibold text-naples_yellow-500">Application Field</h3>
-            <select class="w-full mt-2 p-2 border border-yale_blue-500 rounded bg-yale_blue-200 text-lemon_chiffon-500">
-              <option>Cover Letter</option>
-              <option>Professional Summary</option>
-              <option>Work Experience</option>
-              <option>Skills Description</option>
-            </select>
-          </div>
-          <button class="bg-tomato-500 text-white px-6 py-3 rounded-lg hover:bg-tomato-600 transition-colors w-full">
-            Generate Response
-          </button>
-        </div>
-      </div>
-    `,
-    'Resume Context': `
-      <div class="max-w-2xl p-6">
-        <p class="text-lemon_chiffon-500 mb-4">Provide additional context to improve the AI-generated responses for your applications.</p>
-        <div class="space-y-4">
-          <div class="bg-yale_blue-300 p-4 rounded-lg border border-yale_blue-400">
-            <h3 class="font-semibold text-naples_yellow-500">Career Level</h3>
-            <select class="w-full mt-2 p-2 border border-yale_blue-500 rounded bg-yale_blue-200 text-lemon_chiffon-500">
-              <option>Entry Level</option>
-              <option>Mid Level</option>
-              <option>Senior Level</option>
-              <option>Executive</option>
-            </select>
-          </div>
-          <div class="bg-yale_blue-300 p-4 rounded-lg border border-yale_blue-400">
-            <h3 class="font-semibold text-naples_yellow-500">Key Skills</h3>
-            <textarea class="w-full mt-2 p-2 border border-yale_blue-500 rounded bg-yale_blue-200 text-lemon_chiffon-500" rows="3" placeholder="Enter your key skills, separated by commas"></textarea>
-          </div>
-          <div class="bg-yale_blue-300 p-4 rounded-lg border border-yale_blue-400">
-            <h3 class="font-semibold text-naples_yellow-500">Preferred Industries</h3>
-            <textarea class="w-full mt-2 p-2 border border-yale_blue-500 rounded bg-yale_blue-200 text-lemon_chiffon-500" rows="2" placeholder="e.g., Technology, Healthcare, Finance"></textarea>
-          </div>
-        </div>
-      </div>
-    `,
     'Upload Application': `
       <div class="max-w-4xl p-6">
         <div class="grid grid-cols-2 gap-6">
-          <!-- File Upload Section -->
           <div class="bg-yale_blue-300 rounded-lg p-6 border border-yale_blue-400">
-            <p class="text-lemon_chiffon-500 mb-4">Upload your job application to begin. The file will be processed and stored locally on your machine.</p>
+            <p class="text-lemon_chiffon-500 mb-4">Upload your job application data.</p>
             <div class="border-2 border-dashed border-yale_blue-400 rounded-lg p-8 text-center bg-yale_blue-300">
               <button onclick="window.handleFileSelect()" class="bg-tomato-500 text-white px-6 py-3 rounded-lg hover:bg-tomato-600 transition-colors">
                 Choose File
@@ -262,11 +172,9 @@ function getSubmenuContent(submenu) {
               <p class="mt-2 text-sm text-lemon_chiffon-400">PDF, DOCX, or TXT files accepted</p>
             </div>
           </div>
-
-          <!-- Extension Data Section -->
           <div class="bg-yale_blue-300 rounded-lg p-6 border border-yale_blue-400">
             <div class="flex justify-between items-center mb-4">
-              <h3 class="text-xl font-semibold text-naples_yellow-500">Extension Data</h3>
+              <h3 class="text-xl font-semibold text-naples_yellow-500">Application Data</h3>
               <div>
                 <button onclick="window.handleRefreshData()" class="mr-2 text-sm text-lemon_chiffon-500 hover:text-lemon_chiffon-400">
                   ↻ Refresh
@@ -277,7 +185,7 @@ function getSubmenuContent(submenu) {
               </div>
             </div>
             <div id="extension-data" class="bg-yale_blue-200 rounded-lg p-4 h-[300px] overflow-auto">
-              <p class="text-lemon_chiffon-500 text-center">Waiting for data from extension...</p>
+              <p class="text-lemon_chiffon-500 text-center">Waiting for application data...</p>
             </div>
           </div>
         </div>
@@ -286,9 +194,8 @@ function getSubmenuContent(submenu) {
     'Enhance Application': `
       <div class="max-w-4xl p-6">
         <div class="grid grid-cols-2 gap-6">
-          <!-- Input Section -->
           <div class="space-y-4">
-            <p class="text-lemon_chiffon-500 mb-4">Generate tailored improvements for your job application using AI assistance.</p>
+            <p class="text-lemon_chiffon-500 mb-4">Generate tailored responses for your job application.</p>
             <div class="bg-yale_blue-300 p-4 rounded-lg border border-yale_blue-400">
               <h3 class="font-semibold text-naples_yellow-500">Application Type</h3>
               <select id="application-type" class="w-full mt-2 p-2 border border-yale_blue-500 rounded bg-yale_blue-200 text-lemon_chiffon-500">
@@ -311,12 +218,28 @@ function getSubmenuContent(submenu) {
                 <option>Impact & Achievement Focus</option>
               </select>
             </div>
+            <div class="bg-yale_blue-300 p-4 rounded-lg border border-yale_blue-400">
+              <h3 class="font-semibold text-naples_yellow-500">Industry Focus</h3>
+              <select id="industry-focus" class="w-full mt-2 p-2 border border-yale_blue-500 rounded bg-yale_blue-200 text-lemon_chiffon-500">
+                <option>Technology</option>
+                <option>Healthcare</option>
+                <option>Finance</option>
+                <option>Education</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="bg-yale_blue-300 p-4 rounded-lg border border-yale_blue-400">
+              <h3 class="font-semibold text-naples_yellow-500">Target Keywords</h3>
+              <textarea id="target-keywords" class="w-full mt-2 p-2 border border-yale_blue-500 rounded bg-yale_blue-200 text-lemon_chiffon-500" rows="3" placeholder="Enter relevant keywords for your application"></textarea>
+            </div>
+            <div class="bg-yale_blue-300 p-4 rounded-lg border border-yale_blue-400">
+              <h3 class="font-semibold text-naples_yellow-500">Company Culture Notes</h3>
+              <textarea id="company-culture" class="w-full mt-2 p-2 border border-yale_blue-500 rounded bg-yale_blue-200 text-lemon_chiffon-500" rows="2" placeholder="Enter notes about the company culture and values"></textarea>
+            </div>
             <button onclick="window.handleGenerateImprovements()" class="bg-tomato-500 text-white px-6 py-3 rounded-lg hover:bg-tomato-600 transition-colors w-full">
               Generate Improvements
             </button>
           </div>
-
-          <!-- Response Section -->
           <div class="bg-yale_blue-300 rounded-lg p-6 border border-yale_blue-400">
             <div class="flex justify-between items-center mb-4">
               <h3 class="text-xl font-semibold text-naples_yellow-500">AI Response</h3>
@@ -333,43 +256,18 @@ function getSubmenuContent(submenu) {
         </div>
       </div>
     `,
-    'Application Context': `
-      <div class="max-w-2xl p-6">
-        <p class="text-lemon_chiffon-500 mb-4">Provide additional context to improve the AI-generated suggestions for your application materials.</p>
-        <div class="space-y-4">
-          <div class="bg-yale_blue-300 p-4 rounded-lg border border-yale_blue-400">
-            <h3 class="font-semibold text-naples_yellow-500">Industry Focus</h3>
-            <select class="w-full mt-2 p-2 border border-yale_blue-500 rounded bg-yale_blue-200 text-lemon_chiffon-500">
-              <option>Technology</option>
-              <option>Healthcare</option>
-              <option>Finance</option>
-              <option>Education</option>
-              <option>Other</option>
-            </select>
-          </div>
-          <div class="bg-yale_blue-300 p-4 rounded-lg border border-yale_blue-400">
-            <h3 class="font-semibold text-naples_yellow-500">Target Keywords</h3>
-            <textarea class="w-full mt-2 p-2 border border-yale_blue-500 rounded bg-yale_blue-200 text-lemon_chiffon-500" rows="3" placeholder="Enter relevant keywords for your application"></textarea>
-          </div>
-          <div class="bg-yale_blue-300 p-4 rounded-lg border border-yale_blue-400">
-            <h3 class="font-semibold text-naples_yellow-500">Company Culture Notes</h3>
-            <textarea class="w-full mt-2 p-2 border border-yale_blue-500 rounded bg-yale_blue-200 text-lemon_chiffon-500" rows="2" placeholder="Enter notes about the company culture and values"></textarea>
-          </div>
-        </div>
-      </div>
-    `,
     'API Key': `
       <div class="max-w-2xl p-6">
-        <p class="text-lemon_chiffon-500 mb-4">Configure your OpenAI API settings for enhanced response generation.</p>
+        <p class="text-lemon_chiffon-500 mb-4">Configure your OpenAI API settings.</p>
         <div class="space-y-4">
           <div class="bg-yale_blue-300 p-4 rounded-lg border border-yale_blue-400">
             <h3 class="font-semibold text-naples_yellow-500">OpenAI API Base URL</h3>
-            <input type="text" id="api-base" class="w-full mt-2 p-2 border border-yale_blue-500 rounded bg-yale_blue-200 text-lemon_chiffon-500" placeholder="Enter your OpenAI API base URL (e.g., https://rgvaiclass.com/chat/api/v1)">
+            <input type="text" id="api-base" class="w-full mt-2 p-2 border border-yale_blue-500 rounded bg-yale_blue-200 text-lemon_chiffon-500" placeholder="e.g., https://rgvaiclass.com/chat/api/v1">
           </div>
           <div class="bg-yale_blue-300 p-4 rounded-lg border border-yale_blue-400">
             <h3 class="font-semibold text-naples_yellow-500">OpenAI API Key</h3>
             <input type="password" id="api-key" class="w-full mt-2 p-2 border border-yale_blue-500 rounded bg-yale_blue-200 text-lemon_chiffon-500" placeholder="Enter your OpenAI API key">
-            <p class="mt-2 text-sm text-lemon_chiffon-400">Your API settings are stored locally and used only for generating responses.</p>
+            <p class="mt-2 text-sm text-lemon_chiffon-400">Settings are stored locally.</p>
           </div>
           <button onclick="window.handleApplyAPISettings()" class="bg-tomato-500 text-white px-6 py-3 rounded-lg hover:bg-tomato-600 transition-colors w-full">
             Apply Settings
@@ -410,7 +308,6 @@ function getSubmenuContent(submenu) {
       </div>
     `
   };
-
   return contents[submenu] || `<p class="text-lemon_chiffon-500">Content for ${submenu} is being developed...</p>`;
 }
 
@@ -425,25 +322,19 @@ window.handleSubmenu = (submenu) => {
   currentSubmenu = submenu;
   document.querySelector('#app').innerHTML = renderContent();
   if (submenu === 'Upload Application') {
-    setTimeout(() => {
-      window.handleRefreshData();
-    }, 500);
+    setTimeout(() => window.handleRefreshData(), 500);
   } else if (submenu === 'Upload Resume') {
-    setTimeout(() => {
-      window.handleRefreshResumeData();
-    }, 500);
+    setTimeout(() => window.handleRefreshResumeData(), 500);
   }
 };
 
-// Add file selection handler
+// File selection handler
 window.handleFileSelect = () => {
   const fileInput = createFileInput();
   document.body.appendChild(fileInput);
   fileInput.click();
   fileInput.addEventListener('change', () => {
-    setTimeout(() => {
-      document.body.removeChild(fileInput);
-    }, 1000);
+    setTimeout(() => document.body.removeChild(fileInput), 1000);
   });
 };
 
@@ -458,7 +349,7 @@ window.handleApplyAPISettings = async () => {
         body: JSON.stringify({ api_base: apiBase, api_key: apiKey })
       });
       const result = await response.json();
-      if(result.status === "success") {
+      if (result.status === 'success') {
         alert('API settings updated successfully!');
       } else {
         throw new Error(result.message);
@@ -473,7 +364,7 @@ window.handleApplyAPISettings = async () => {
 window.clearExtensionData = () => {
   const dataContainer = document.getElementById('extension-data');
   if (dataContainer) {
-    dataContainer.innerHTML = '<p class="text-lemon_chiffon-500 text-center">Waiting for data from extension...</p>';
+    dataContainer.innerHTML = '<p class="text-lemon_chiffon-500 text-center">Waiting for application data...</p>';
   }
 };
 
@@ -485,14 +376,9 @@ window.clearResumeData = () => {
 };
 
 window.handleExtensionData = (data) => {
-  console.log("handleExtensionData called with:", data);
   const dataContainer = document.getElementById('extension-data');
-  console.log("dataContainer found:", !!dataContainer);
-  
   if (dataContainer && data.display_text) {
-    console.log("Updating container HTML");
     const metrics = data.metadata;
-    
     dataContainer.innerHTML = `
       <div class="text-lemon_chiffon-500">
         <div class="mb-4 grid grid-cols-2 gap-4">
@@ -518,40 +404,24 @@ window.handleExtensionData = (data) => {
 window.handleRefreshData = async () => {
   try {
     const dataContainer = document.getElementById('extension-data');
-    if (!dataContainer) {
-      console.log("No extension-data container found");
-      return;
-    }
+    if (!dataContainer) return;
 
-    console.log("Fetching latest extraction...");
     const response = await fetch('http://localhost:8000/api/application/last_extract');
     const data = await response.json();
-    console.log("GET last_extract full response:", JSON.stringify(data, null, 2));
-    
     if (data.status === 'success' && data.display_text) {
-      console.log("Updating UI with data");
       window.handleExtensionData(data);
     } else {
-      console.log("Data not in expected format:", data);
-      dataContainer.innerHTML = `<p class="text-lemon_chiffon-500 text-center">
-        ${data.message || 'No data available'}
-      </p>`;
+      dataContainer.innerHTML = `<p class="text-lemon_chiffon-500 text-center">${data.message || 'No data available'}</p>`;
     }
   } catch (error) {
     console.error('Error fetching data:', error);
   }
 };
 
-// New function to handle parsed resume data
 window.handleResumeData = (data) => {
-  console.log("handleResumeData called with:", data);
   const dataContainer = document.getElementById('resume-data');
-  console.log("dataContainer found:", !!dataContainer);
-  
   if (dataContainer && data.parsed_sections) {
-    console.log("Updating resume data container HTML");
     const metrics = data.metadata;
-    
     dataContainer.innerHTML = `
       <div class="text-lemon_chiffon-500">
         <div class="mb-4 grid grid-cols-2 gap-4">
@@ -573,30 +443,17 @@ window.handleResumeData = (data) => {
   }
 };
 
-// New function to refresh parsed resume data
 window.handleRefreshResumeData = async () => {
   try {
     const dataContainer = document.getElementById('resume-data');
-    if (!dataContainer) {
-      console.log("No resume-data container found");
-      return;
-    }
+    if (!dataContainer) return;
 
-    console.log("Fetching latest resume upload...");
-    const response = await fetch('http://localhost:8000/api/resume/upload', {
-      method: 'GET'
-    });
+    const response = await fetch('http://localhost:8000/api/resume/upload', { method: 'GET' });
     const data = await response.json();
-    console.log("GET last_upload full response:", JSON.stringify(data, null, 2));
-    
     if (data.status === 'success' && data.parsed_sections) {
-      console.log("Updating UI with resume data");
       window.handleResumeData(data);
     } else {
-      console.log("Data not in expected format:", data);
-      dataContainer.innerHTML = `<p class="text-lemon_chiffon-500 text-center">
-        ${data.message || 'No resume loaded yet...'}
-      </p>`;
+      dataContainer.innerHTML = `<p class="text-lemon_chiffon-500 text-center">${data.message || 'No resume loaded yet...'}</p>`;
     }
   } catch (error) {
     console.error('Error fetching resume data:', error);
@@ -615,7 +472,7 @@ window.handleGenerateImprovements = async () => {
     const extensionResponse = await fetch('http://localhost:8000/api/application/last_extract');
     const extensionData = await extensionResponse.json();
     if (!extensionData.display_text) {
-      throw new Error('No extension data available. Please upload an application first.');
+      throw new Error('No application data available. Please upload an application first.');
     }
 
     const resumeResponse = await fetch('http://localhost:8000/api/resume/last_upload', { method: 'GET' });
@@ -627,13 +484,19 @@ window.handleGenerateImprovements = async () => {
     const applicationType = document.getElementById('application-type').value;
     const company = document.getElementById('company').value;
     const enhancementFocus = document.getElementById('enhancement-focus').value;
+    const industryFocus = document.getElementById('industry-focus').value;
+    const targetKeywords = document.getElementById('target-keywords').value;
+    const companyCulture = document.getElementById('company-culture').value;
 
     const requestBody = {
       application_type: applicationType,
       company: company,
       enhancement_focus: enhancementFocus,
       resume_content: resumeData.content,
-      application_content: extensionData.display_text
+      application_content: extensionData.display_text,
+      industry_focus: industryFocus,
+      target_keywords: targetKeywords,
+      company_culture: companyCulture
     };
 
     const response = await fetch('http://localhost:8000/api/application/enhance', {

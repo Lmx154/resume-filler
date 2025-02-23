@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional, List
+from typing import Optional
 
 class Resume(BaseModel):
     content: str
@@ -12,11 +12,6 @@ class EnhanceRequest(BaseModel):
     field: str
     resume_content: str
 
-class ContextSettings(BaseModel):
-    career_level: str
-    key_skills: List[str]
-    preferred_industries: List[str]
-
 class AIConfig(BaseModel):
     api_key: Optional[str] = None
     endpoint: Optional[str] = None
@@ -27,3 +22,13 @@ class AIConfig(BaseModel):
 class EnhanceResponse(BaseModel):
     enhanced_content: str
     original_content: str
+
+class EnhanceApplicationRequest(BaseModel):
+    application_type: str
+    company: str
+    enhancement_focus: str
+    resume_content: str
+    application_content: str
+    industry_focus: str
+    target_keywords: str
+    company_culture: str
