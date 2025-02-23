@@ -9,8 +9,6 @@ class ExtractRequest(BaseModel):
     text: str
 
 class EnhanceApplicationRequest(BaseModel):
-    application_type: str
-    company: str
     enhancement_focus: str
     resume_content: str
     application_content: str
@@ -37,20 +35,18 @@ def enhance_application(request: EnhanceApplicationRequest):
         Resume Content:
         {request.resume_content}
 
-        Job Application Form Content:
+        Scraped Job Application Form Content:
         {request.application_content}
 
-        Application Type: {request.application_type}
-        Company: {request.company}
         Enhancement Focus: {request.enhancement_focus}
         Industry Focus: {request.industry_focus}
         Target Keywords: {request.target_keywords}
         Company Culture Notes: {request.company_culture}
 
-        Based on the resume and job application form content provided, generate a tailored response for the application form fields.
-        Ensure the response aligns with the enhancement focus, incorporates target keywords, reflects the company culture, and is professional, concise, and truthful.
+        Using the resume content, generate responses to auto-fill the job application form fields based on the scraped content.
+        Ensure the responses align with the enhancement focus, incorporate target keywords, reflect the company culture, and are professional, concise, and truthful.
         """
-        enhanced_content = core_service.generate_openai_response(prompt)  # No context passed
+        enhanced_content = core_service.generate_openai_response(prompt)
         return {
             "status": "success",
             "enhanced_content": enhanced_content

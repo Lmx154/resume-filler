@@ -6,24 +6,16 @@ let currentSubmenu = '';
 
 const pages = {
   resume: {
-    title: 'Resume',  // Renamed from "Resume Tools"
-    submenus: [
-      'Upload Resume'
-    ]
+    title: 'Resume',
+    submenus: ['Upload Resume']
   },
   application: {
-    title: 'Application',  // Renamed from "Application Tools"
-    submenus: [
-      'Upload Application',
-      'Enhance Application'
-    ]
+    title: 'Application',
+    submenus: ['Upload Application', 'Enhance Application']
   },
   settings: {
     title: 'Settings',
-    submenus: [
-      'API Key',
-      'Ollama'
-    ]
+    submenus: ['API Key', 'Ollama']
   }
 };
 
@@ -33,8 +25,7 @@ function renderContent() {
       <div class="bg-yale_blue-300 rounded-lg p-8 shadow-xl border border-yale_blue-400">
         <h2 class="text-4xl font-bold text-lemon_chiffon-500 mb-6">Welcome to Resume Filler!</h2>
         <p class="text-lg text-lemon_chiffon-400 mb-6">
-          Automate your job application process using AI. Upload your resume and job application data, 
-          then generate tailored responses to fill out forms securely on your local machine.
+          Auto-fill job application forms scraped from the web using your resume data, processed securely on your local machine.
         </p>
         <div class="grid grid-cols-2 gap-6 mb-8">
           <div class="bg-yale_blue-400 p-6 rounded-lg border border-yale_blue-500">
@@ -42,8 +33,8 @@ function renderContent() {
             <p class="text-lemon_chiffon-500">Your data stays on your computer, ensuring privacy.</p>
           </div>
           <div class="bg-yale_blue-400 p-6 rounded-lg border border-yale_blue-500">
-            <h3 class="text-xl font-semibold text-naples_yellow-500 mb-3">AI Assistance</h3>
-            <p class="text-lemon_chiffon-500">Leverage AI to craft responses for job applications.</p>
+            <h3 class="text-xl font-semibold text-naples_yellow-500 mb-3">AI Auto-Fill</h3>
+            <p class="text-lemon_chiffon-500">Leverage AI to complete forms based on your resume.</p>
           </div>
         </div>
       </div>
@@ -62,9 +53,7 @@ function renderContent() {
       <header class="bg-yale_blue-500 text-white py-4 px-6 shadow-lg">
         <h1 class="text-2xl font-bold">Resume Filler</h1>
       </header>
-      
       <div class="flex">
-        <!-- Main Navigation -->
         <nav class="w-48 bg-yale_blue-400 h-[calc(100vh-64px)]">
           ${Object.entries(pages).map(([key, value]) => `
             <div class="menu-item ${currentPage === key ? 'active' : ''}"
@@ -73,8 +62,6 @@ function renderContent() {
             </div>
           `).join('')}
         </nav>
-
-        <!-- Submenu -->
         <nav class="w-56 bg-yale_blue-300 h-[calc(100vh-64px)] border-r border-yale_blue-400">
           ${pages[currentPage].submenus.map(submenu => `
             <div class="submenu-item ${currentSubmenu === submenu ? 'bg-yale_blue-400' : ''}"
@@ -83,8 +70,6 @@ function renderContent() {
             </div>
           `).join('')}
         </nav>
-
-        <!-- Content Area -->
         <main class="flex-1 bg-yale_blue-200">
           ${submenuContent}
         </main>
@@ -97,12 +82,10 @@ async function processResumeFile(file) {
   try {
     const formData = new FormData();
     formData.append('file', file);
-    
     const response = await fetch('http://localhost:8000/api/resume/upload', {
       method: 'POST',
       body: formData
     });
-    
     const result = await response.json();
     if (result.status === 'success') {
       await handleRefreshResumeData();
@@ -164,7 +147,7 @@ function getSubmenuContent(submenu) {
       <div class="max-w-4xl p-6">
         <div class="grid grid-cols-2 gap-6">
           <div class="bg-yale_blue-300 rounded-lg p-6 border border-yale_blue-400">
-            <p class="text-lemon_chiffon-500 mb-4">Upload your job application data.</p>
+            <p class="text-lemon_chiffon-500 mb-4">Upload your scraped job application data.</p>
             <div class="border-2 border-dashed border-yale_blue-400 rounded-lg p-8 text-center bg-yale_blue-300">
               <button onclick="window.handleFileSelect()" class="bg-tomato-500 text-white px-6 py-3 rounded-lg hover:bg-tomato-600 transition-colors">
                 Choose File
@@ -195,20 +178,7 @@ function getSubmenuContent(submenu) {
       <div class="max-w-4xl p-6">
         <div class="grid grid-cols-2 gap-6">
           <div class="space-y-4">
-            <p class="text-lemon_chiffon-500 mb-4">Generate tailored responses for your job application.</p>
-            <div class="bg-yale_blue-300 p-4 rounded-lg border border-yale_blue-400">
-              <h3 class="font-semibold text-naples_yellow-500">Application Type</h3>
-              <select id="application-type" class="w-full mt-2 p-2 border border-yale_blue-500 rounded bg-yale_blue-200 text-lemon_chiffon-500">
-                <option>Cover Letter</option>
-                <option>Personal Statement</option>
-                <option>Project Description</option>
-                <option>Job Description Response</option>
-              </select>
-            </div>
-            <div class="bg-yale_blue-300 p-4 rounded-lg border border-yale_blue-400">
-              <h3 class="font-semibold text-naples_yellow-500">Company</h3>
-              <input id="company" type="text" class="w-full mt-2 p-2 border border-yale_blue-500 rounded bg-yale_blue-200 text-lemon_chiffon-500" placeholder="e.g., Tech Corp">
-            </div>
+            <p class="text-lemon_chiffon-500 mb-4">Generate auto-fill responses for your scraped job application.</p>
             <div class="bg-yale_blue-300 p-4 rounded-lg border border-yale_blue-400">
               <h3 class="font-semibold text-naples_yellow-500">Enhancement Focus</h3>
               <select id="enhancement-focus" class="w-full mt-2 p-2 border border-yale_blue-500 rounded bg-yale_blue-200 text-lemon_chiffon-500">
@@ -230,14 +200,14 @@ function getSubmenuContent(submenu) {
             </div>
             <div class="bg-yale_blue-300 p-4 rounded-lg border border-yale_blue-400">
               <h3 class="font-semibold text-naples_yellow-500">Target Keywords</h3>
-              <textarea id="target-keywords" class="w-full mt-2 p-2 border border-yale_blue-500 rounded bg-yale_blue-200 text-lemon_chiffon-500" rows="3" placeholder="Enter relevant keywords for your application"></textarea>
+              <textarea id="target-keywords" class="w-full mt-2 p-2 border border-yale_blue-500 rounded bg-yale_blue-200 text-lemon_chiffon-500" rows="3" placeholder="Enter relevant keywords from the job"></textarea>
             </div>
             <div class="bg-yale_blue-300 p-4 rounded-lg border border-yale_blue-400">
               <h3 class="font-semibold text-naples_yellow-500">Company Culture Notes</h3>
-              <textarea id="company-culture" class="w-full mt-2 p-2 border border-yale_blue-500 rounded bg-yale_blue-200 text-lemon_chiffon-500" rows="2" placeholder="Enter notes about the company culture and values"></textarea>
+              <textarea id="company-culture" class="w-full mt-2 p-2 border border-yale_blue-500 rounded bg-yale_blue-200 text-lemon_chiffon-500" rows="2" placeholder="Enter notes about the company culture"></textarea>
             </div>
             <button onclick="window.handleGenerateImprovements()" class="bg-tomato-500 text-white px-6 py-3 rounded-lg hover:bg-tomato-600 transition-colors w-full">
-              Generate Improvements
+              Generate Auto-Fill Responses
             </button>
           </div>
           <div class="bg-yale_blue-300 rounded-lg p-6 border border-yale_blue-400">
@@ -481,16 +451,12 @@ window.handleGenerateImprovements = async () => {
       throw new Error('No resume data available. Please upload a resume first.');
     }
 
-    const applicationType = document.getElementById('application-type').value;
-    const company = document.getElementById('company').value;
     const enhancementFocus = document.getElementById('enhancement-focus').value;
     const industryFocus = document.getElementById('industry-focus').value;
     const targetKeywords = document.getElementById('target-keywords').value;
     const companyCulture = document.getElementById('company-culture').value;
 
     const requestBody = {
-      application_type: applicationType,
-      company: company,
       enhancement_focus: enhancementFocus,
       resume_content: resumeData.content,
       application_content: extensionData.display_text,
@@ -518,10 +484,10 @@ window.handleGenerateImprovements = async () => {
         `;
       }
     } else {
-      throw new Error(result.message || 'Failed to generate improvements');
+      throw new Error(result.message || 'Failed to generate auto-fill responses');
     }
   } catch (error) {
-    console.error('Error generating improvements:', error);
+    console.error('Error generating auto-fill responses:', error);
     const aiResponse = document.getElementById('ai-response');
     if (aiResponse) {
       aiResponse.innerHTML = `

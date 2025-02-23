@@ -24,8 +24,6 @@ class EnhanceResponse(BaseModel):
     original_content: str
 
 class EnhanceApplicationRequest(BaseModel):
-    application_type: str
-    company: str
     enhancement_focus: str
     resume_content: str
     application_content: str
