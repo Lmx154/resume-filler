@@ -52,8 +52,9 @@ def enhance_application(request: EnhanceApplicationRequest):
         {additional_info_str}
 
         Analyze the DOM content of the job application form to identify all fields requiring auto-completion (e.g., personal information, education, skills, experience, additional questions, etc.).
+        Look for input fields, textareas, and placeholders to determine field names (e.g., use 'placeholder' attributes like 'Enter your full name' to infer 'Full Name').
         Using the resume content and any additional information provided, generate responses to auto-complete these fields, ensuring the responses are derived from the resume, align with the enhancement focus, incorporate target keywords, reflect the company culture, include any additional information, and are professional, concise, and truthful.
-        Additionally, suggest a likely DOM selector (e.g., 'input[name="name"]', 'textarea[placeholder="Skills"]') for each field to enable auto-filling.
+        Suggest a likely DOM selector for each field, prioritizing 'input[placeholder*="..."]', 'textarea[placeholder*="..."]', 'input[name="..."]', or 'textarea[name="..."]' based on the DOM structure. Ensure selectors are specific and match the field’s purpose (e.g., 'input[placeholder="Enter your full name"]' for 'Full Name').
         Return only the field names, their corresponding values, and optional selectors in plain text format, one per line, like this: 'Field: Value [Selector]'. If no selector is available, omit the '[Selector]' part. Do not include any additional text, formatting (e.g., Markdown), or explanations.
         """
         enhanced_content = core_service.generate_openai_response(prompt)
