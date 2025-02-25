@@ -5,6 +5,7 @@ from services.core_service import core_service
 from services.file_service import file_service
 import io
 from typing import Optional, Dict
+import json
 
 router = APIRouter(prefix="/api/resume", tags=["resume"])
 
@@ -46,13 +47,13 @@ def upload_resume(
             Resume(
                 content=text_content,
                 file_name=file.filename,
-                file_type=file.content_type
-            ),
-            enhancement_focus=enhancement_focus,
-            industry_focus=industry_focus,
-            target_keywords=target_keywords,
-            company_culture=company_culture,
-            additional_info=additional_info_dict
+                file_type=file.content_type,
+                enhancement_focus=enhancement_focus,
+                industry_focus=industry_focus,
+                target_keywords=target_keywords,
+                company_culture=company_culture,
+                additional_info=additional_info_dict
+            )
         )
         core_service.last_resume.update({
             "parsed_sections": parsed_data["parsed_sections"],
@@ -141,5 +142,3 @@ def read_resume_from_path(request: FilePathRequest):
         }
     except Exception as e:
         return {"status": "error", "message": str(e)}
-
-import json  # Add this import at the top of the file

@@ -6,9 +6,6 @@ import logging
 
 router = APIRouter(prefix="/api/application", tags=["application"])
 
-class ExtractRequest(BaseModel):
-    text: str
-
 class EnhanceApplicationRequest(BaseModel):
     enhancement_focus: str
     resume_content: str
@@ -17,17 +14,6 @@ class EnhanceApplicationRequest(BaseModel):
     target_keywords: str
     company_culture: str
     additional_info: Optional[dict] = None
-
-@router.post("/extract")
-def extract_application(request: ExtractRequest):
-    try:
-        logging.info("Received extraction request")
-        result = core_service.process_extracted_text(request.text)
-        logging.info(f"Result: {result['status']}")
-        return result
-    except Exception as e:
-        logging.error(f"Error in extract_application: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/enhance")
 def enhance_application(request: EnhanceApplicationRequest):
@@ -61,7 +47,7 @@ def enhance_application(request: EnhanceApplicationRequest):
            - For "Keywords Optimization": Incorporate the target keywords naturally.
            - For "Impact & Achievement Focus": Highlight results and accomplishments.
         4. Align responses with the industry focus and reflect the company culture notes where relevant.
-        5. Incorporate any additional information provided to enhance specific fields.
+        5. Incorporate any additional information provided to enhance specific fields, such as 'Current GPA' if provided in Additional Information.
         6. Suggest a DOM selector for each field (e.g., 'input[placeholder="Enter your full name"]', 'textarea[name="experience"]') based on the DOM structure. If no clear selector is identifiable, omit it.
         7. Return the results in plain text format, one field per line, as 'Field: Value [Selector]' (omit [Selector] if not applicable). Do not include extra explanations or formatting.
         """
@@ -71,16 +57,3 @@ def enhance_application(request: EnhanceApplicationRequest):
     except Exception as e:
         logging.error(f"Error in enhance_application: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
-
-@router.get("/last_extract")
-def get_last_extraction():
-    last_extraction = core_service.last_extraction
-    logging.info(f"Getting last extraction. Full content: {last_extraction}")
-    if not last_extraction:
-        logging.warning("No extraction data available")
-        return {"status": "pending", "message": "No extraction data available"}
-    if 'status' not in last_extraction or 'display_text' not in last_extraction:
-        logging.error(f"Invalid last_extraction structure: {last_extraction.keys()}")
-        return {"status": "error", "message": "Invalid data structure"}
-    logging.info(f"Returning extraction with text length: {len(last_extraction.get('display_text', ''))}")
-    return last_extraction

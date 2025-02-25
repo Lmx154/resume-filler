@@ -65,19 +65,17 @@ class CoreService:
             response = client.post(f"{self.ollama_base_url}/api/generate", json={"model": model, "prompt": prompt})
             return response.json()["response"]
 
-    def process_resume(self, resume: Resume, enhancement_focus: str = "Clarity & Conciseness", 
-                       industry_focus: str = "Technology", target_keywords: str = "", 
-                       company_culture: str = "", additional_info: Optional[Dict[str, str]] = None) -> dict:
+    def process_resume(self, resume: Resume) -> dict:
         result = {
             "status": "success",
             "content": resume.content,
             "parsed_sections": {},
             "metadata": {},
-            "enhancement_focus": enhancement_focus,
-            "industry_focus": industry_focus,
-            "target_keywords": target_keywords,
-            "company_culture": company_culture,
-            "additional_info": additional_info or {}
+            "enhancement_focus": resume.enhancement_focus,
+            "industry_focus": resume.industry_focus,
+            "target_keywords": resume.target_keywords,
+            "company_culture": resume.company_culture,
+            "additional_info": resume.additional_info or {}
         }
         self.last_resume.clear()
         self.last_resume.update(result)
@@ -122,7 +120,7 @@ class CoreService:
            - For "Keywords Optimization": Incorporate the target keywords naturally.
            - For "Impact & Achievement Focus": Highlight results and accomplishments.
         3. Align responses with the industry focus and reflect the company culture notes where relevant.
-        4. Incorporate any additional information provided to enhance specific fields.
+        4. Incorporate any additional information provided to enhance specific fields, such as 'Current GPA' if provided in Additional Information.
         5. Return the results in plain text format, one field per line, as 'Field: Value'. Do not include selectors or extra explanations or formatting.
         """
         return prompt

@@ -7,7 +7,6 @@ let openDropdown = ''; // new global variable for dropdown state
 
 const pages = {
   resume: { title: 'Resume', submenus: ['Upload Resume'] },
-  application: { title: 'Application', submenus: ['Upload Application'] },
   settings: { title: 'Settings', submenus: ['API Key', 'Ollama'] }
 };
 
@@ -109,6 +108,51 @@ async function processResumeFile(file) {
   }
 }
 
+async function applyChanges() {
+  try {
+    const enhancementFocus = document.getElementById('enhancement-focus')?.value || 'Clarity & Conciseness';
+    const industryFocus = document.getElementById('industry-focus')?.value || 'Technology';
+    const targetKeywords = document.getElementById('target-keywords')?.value || '';
+    const companyCulture = document.getElementById('company-culture')?.value || '';
+
+    const additionalInfoItems = document.querySelectorAll('#additional-info-container > div');
+    let additionalInfo = {};
+    additionalInfoItems.forEach(item => {
+      const keyInput = item.children[0];
+      const valueInput = item.children[1];
+      if (keyInput.value && valueInput.value) {
+        additionalInfo[keyInput.value] = valueInput.value;
+      }
+    });
+
+    const resumeResponse = await fetch('http://localhost:8000/api/resume/last_upload', { method: 'GET' });
+    const resumeData = await resumeResponse.json();
+    if (resumeData.status !== 'success' || !resumeData.content) {
+      throw new Error('No resume uploaded yet. Please upload a resume first.');
+    }
+
+    const formData = new FormData();
+    formData.append('file', new Blob([resumeData.content], { type: resumeData.file_type }));
+    formData.append('enhancement_focus', enhancementFocus);
+    formData.append('industry_focus', industryFocus);
+    formData.append('target_keywords', targetKeywords);
+    formData.append('company_culture', companyCulture);
+    formData.append('additional_info', JSON.stringify(additionalInfo));
+
+    const response = await fetch('http://localhost:8000/api/resume/upload', { method: 'POST', body: formData });
+    const result = await response.json();
+    if (result.status === 'success') {
+      await handleRefreshResumeData();
+      alert('Changes applied successfully!');
+    } else {
+      throw new Error(result.message || 'Failed to apply changes');
+    }
+  } catch (error) {
+    console.error('Error applying changes:', error);
+    alert(`Error applying changes: ${error.message}. Please check your connection and ensure the backend is running at http://localhost:8000.`);
+  }
+}
+
 function createFileInput() {
   const input = document.createElement('input');
   input.type = 'file';
@@ -165,10 +209,13 @@ function getSubmenuContent(submenu) {
               <button onclick="window.handleFileSelect()" class="bg-tomato-500 text-white px-6 py-3 rounded-lg hover:bg-tomato-600">Choose File</button>
               <p class="mt-2 text-sm text-lemon_chiffon-400">PDF, DOCX, or TXT files accepted</p>
             </div>
+            <button onclick="window.applyChanges()" class="bg-tomato-500 text-white px-6 py-3 rounded-lg hover:bg-tomato-600 mt-4 w-full">
+              Apply Changes
+            </button>
           </div>
           <div class="bg-yale_blue-300 rounded-lg p-6 border border-yale_blue-400">
             <div class="flex justify-between items-center mb-4">
-              <h3 class="text-xl font-semibold text-naples_yellow-500">Parsed Resume</h3>
+              <h3 class="text-xl font-semibold text-naples_yellow-500">Parsed Resume & Prompt Configuration</h3>
               <div>
                 <button onclick="window.handleRefreshResumeData()" class="mr-2 text-sm text-lemon_chiffon-500 hover:text-lemon_chiffon-400">↻ Refresh</button>
                 <button onclick="window.clearResumeData()" class="text-sm text-tomato-500 hover:text-tomato-600">Clear</button>
@@ -176,31 +223,6 @@ function getSubmenuContent(submenu) {
             </div>
             <div id="resume-data" class="bg-yale_blue-200 rounded-lg p-4 h-[70vh] w-full overflow-auto">
               <p class="text-lemon_chiffon-500 text-center">No resume loaded yet...</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    `,
-    'Upload Application': `
-      <div class="w-full p-6">
-        <div class="grid grid-cols-2 gap-6">
-          <div class="bg-yale_blue-300 rounded-lg p-6 border border-yale_blue-400">
-            <p class="text-lemon_chiffon-500 mb-4">Upload your scraped job application data.</p>
-            <div class="border-2 border-dashed border-yale_blue-400 rounded-lg p-8 text-center bg-yale_blue-300 w-full">
-              <button onclick="window.handleFileSelect()" class="bg-tomato-500 text-white px-6 py-3 rounded-lg hover:bg-tomato-600">Choose File</button>
-              <p class="mt-2 text-sm text-lemon_chiffon-400">PDF, DOCX, or TXT files accepted</p>
-            </div>
-          </div>
-          <div class="bg-yale_blue-300 rounded-lg p-6 border border-yale_blue-400">
-            <div class="flex justify-between items-center mb-4">
-              <h3 class="text-xl font-semibold text-naples_yellow-500">Application Data</h3>
-              <div>
-                <button onclick="window.handleRefreshData()" class="mr-2 text-sm text-lemon_chiffon-500 hover:text-lemon_chiffon-400">↻ Refresh</button>
-                <button onclick="window.clearExtensionData()" class="text-sm text-tomato-500 hover:text-tomato-600">Clear</button>
-              </div>
-            </div>
-            <div id="extension-data" class="bg-yale_blue-200 rounded-lg p-4 h-[70vh] w-full overflow-auto">
-              <p class="text-lemon_chiffon-500 text-center">Waiting for application data...</p>
             </div>
           </div>
         </div>
@@ -282,8 +304,7 @@ window.handleSubmenu = (submenu) => {
   openDropdown = '';
   document.querySelector('#app').innerHTML = renderContent();
   initAdditionalInfo();
-  if (submenu === 'Upload Application') setTimeout(() => window.handleRefreshData(), 500);
-  else if (submenu === 'Upload Resume') setTimeout(() => window.handleRefreshResumeData(), 500);
+  if (submenu === 'Upload Resume') setTimeout(() => window.handleRefreshResumeData(), 500);
 };
 
 // File selection handler
@@ -315,54 +336,26 @@ window.handleApplyAPISettings = async () => {
   }
 };
 
-window.clearExtensionData = () => {
-  const dataContainer = document.getElementById('extension-data');
-  if (dataContainer) dataContainer.innerHTML = '<p class="text-lemon_chiffon-500 text-center">Waiting for application data...</p>';
-};
-
 window.clearResumeData = () => {
   const dataContainer = document.getElementById('resume-data');
   if (dataContainer) dataContainer.innerHTML = '<p class="text-lemon_chiffon-500 text-center">No resume loaded yet...</p>';
-};
-
-window.handleExtensionData = (data) => {
-  const dataContainer = document.getElementById('extension-data');
-  if (dataContainer && data.display_text) {
-    const metrics = data.metadata;
-    dataContainer.innerHTML = `
-      <div class="text-lemon_chiffon-500">
-        <div class="mb-4 grid grid-cols-2 gap-4">
-          <div><span class="font-semibold">Words:</span> ${metrics.word_count}<span class="ml-4 font-semibold">Paragraphs:</span> ${metrics.paragraph_count}</div>
-          <div><span class="font-semibold">Sentences:</span> ${metrics.sentence_count}<span class="ml-4 font-semibold">Read Time:</span> ${metrics.estimated_read_time}m</div>
-        </div>
-        <div class="whitespace-pre-wrap font-mono text-sm bg-yale_blue-300 p-4 rounded-lg max-h-[400px] overflow-y-auto">${data.display_text}</div>
-      </div>
-    `;
-  } else dataContainer.innerHTML = '<p class="text-lemon_chiffon-500 text-center">No data available</p>';
-};
-
-window.handleRefreshData = async () => {
-  try {
-    const dataContainer = document.getElementById('extension-data');
-    if (!dataContainer) return;
-    const response = await fetch('http://localhost:8000/api/application/last_extract');
-    const data = await response.json();
-    if (data.status === 'success' && data.display_text) window.handleExtensionData(data);
-    else dataContainer.innerHTML = `<p class="text-lemon_chiffon-500 text-center">${data.message || 'No data available'}</p>`;
-  } catch (error) { console.error('Error fetching data:', error); }
 };
 
 window.handleResumeData = (data) => {
   const dataContainer = document.getElementById('resume-data');
   if (dataContainer && data.parsed_sections) {
     const metrics = data.metadata;
+    const settings = data.settings || {};
     dataContainer.innerHTML = `
       <div class="text-lemon_chiffon-500">
         <div class="mb-4 grid grid-cols-2 gap-4">
           <div><span class="font-semibold">Words:</span> ${metrics.word_count}<span class="ml-4 font-semibold">Read Time:</span> ${metrics.estimated_read_time}m</div>
           <div><span class="font-semibold">Sentences:</span> ${metrics.sentence_count}</div>
         </div>
-        <div class="whitespace-pre-wrap font-mono text-sm bg-yale_blue-300 p-4 rounded-lg max-h-[400px] overflow-y-auto">${JSON.stringify(data.parsed_sections, null, 2)}</div>
+        <h4 class="font-semibold text-naples_yellow-500 mt-2">Parsed Resume Sections</h4>
+        <div class="whitespace-pre-wrap font-mono text-sm bg-yale_blue-300 p-4 rounded-lg max-h-[200px] overflow-y-auto">${JSON.stringify(data.parsed_sections, null, 2)}</div>
+        <h4 class="font-semibold text-naples_yellow-500 mt-2">Prompt Configuration</h4>
+        <div class="whitespace-pre-wrap font-mono text-sm bg-yale_blue-300 p-4 rounded-lg max-h-[200px] overflow-y-auto">${JSON.stringify(settings, null, 2)}</div>
       </div>
     `;
   } else dataContainer.innerHTML = '<p class="text-lemon_chiffon-500 text-center">No resume loaded yet...</p>';
