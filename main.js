@@ -203,7 +203,6 @@ function getSubmenuContent(submenu) {
                 </button>
               </div>
             </div>
-            <!-- Changed height to h-[70vh] -->
             <div id="ai-response" class="bg-yale_blue-200 rounded-lg p-4 h-[70vh] w-full overflow-auto">
               <p class="text-lemon_chiffon-500 text-center">AI response will appear here...</p>
             </div>
@@ -403,7 +402,6 @@ window.handleGenerateImprovements = async () => {
     const targetKeywords = document.getElementById('target-keywords').value;
     const companyCulture = document.getElementById('company-culture').value;
 
-    // Gather additional info items from the new container
     const additionalInfoItems = document.querySelectorAll('#additional-info-container > div');
     let additionalInfo = {};
     additionalInfoItems.forEach(item => {
@@ -425,22 +423,43 @@ window.handleGenerateImprovements = async () => {
     };
 
     const response = await fetch('http://localhost:8000/api/application/enhance', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestBody)
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(requestBody)
     });
 
     const result = await response.json();
     if (result.status === 'success') {
       const aiResponse = document.getElementById('ai-response');
-      if (aiResponse) aiResponse.innerHTML = `
-        <div class="text-lemon_chiffon-500">
-          <div class="whitespace-pre-wrap font-mono text-sm bg-yale_blue-300 p-4 rounded-lg max-h-[400px] overflow-y-auto">${result.enhanced_content}</div>
-        </div>
-      `;
+      if (aiResponse) {
+        // Parse and format the enhanced content
+        const lines = result.enhanced_content.split('\n');
+        let formattedResponse = '<div class="text-lemon_chiffon-500 space-y-4">';
+        
+        lines.forEach(line => {
+          const match = line.match(/(.+?):\s(.+?)(?:\s\[(.*?)\])?$/);
+          if (match) {
+            const field = match[1].trim();
+            const value = match[2].trim();
+            const selector = match[3] ? match[3].trim() : 'Not specified';
+            formattedResponse += `
+              <div class="bg-yale_blue-300 p-3 rounded-lg">
+                <p><span class="font-semibold text-naples_yellow-500">Field:</span> ${field}</p>
+                <p><span class="font-semibold text-naples_yellow-500">Value:</span> ${value}</p>
+                <p class="text-sm"><span class="font-semibold text-naples_yellow-500">Selector:</span> ${selector}</p>
+              </div>
+            `;
+          }
+        });
+        
+        formattedResponse += '</div>';
+        aiResponse.innerHTML = formattedResponse;
+      }
     } else throw new Error(result.message || 'Failed to generate auto-fill responses');
   } catch (error) {
     console.error('Error generating auto-fill responses:', error);
     const aiResponse = document.getElementById('ai-response');
-    if (aiResponse) aiResponse.innerHTML = `<div class="text-tomato-500">Error: ${error.message}</div>`;
+    if (aiResponse) aiResponse.innerHTML = `<div class="text-tomato-500 p-4">Error: ${error.message}</div>`;
   }
 };
 

@@ -12,7 +12,7 @@ class ExtractRequest(BaseModel):
 class EnhanceApplicationRequest(BaseModel):
     enhancement_focus: str
     resume_content: str
-    application_content: str  # Now accepts DOM content
+    application_content: str
     industry_focus: str
     target_keywords: str
     company_culture: str
@@ -35,10 +35,12 @@ def enhance_application(request: EnhanceApplicationRequest):
         logging.info("Received enhancement request")
         additional_info_str = ""
         if request.additional_info and isinstance(request.additional_info, dict):
-            additional_info_str = "\nAdditional Information: " + ", ".join(f"{k}: {v}" for k, v in request.additional_info.items())
+            additional_info_str = "\nAdditional Information:\n" + "\n".join(f"- {k}: {v}" for k, v in request.additional_info.items())
 
-        # Step 1: Use AI to identify fields and suggest auto-fill values from DOM
+        # Enhanced prompt with better use of customization fields
         prompt = f"""
+        You are a professional resume writer tasked with auto-filling a job application form based on a user's resume. Below is the information provided:
+
         Resume Content:
         {request.resume_content}
 
@@ -51,15 +53,21 @@ def enhance_application(request: EnhanceApplicationRequest):
         Company Culture Notes: {request.company_culture}
         {additional_info_str}
 
-        Analyze the DOM content of the job application form to identify all fields requiring auto-completion (e.g., personal information, education, skills, experience, additional questions, etc.).
-        Look for input fields, textareas, and placeholders to determine field names (e.g., use 'placeholder' attributes like 'Enter your full name' to infer 'Full Name').
-        Using the resume content and any additional information provided, generate responses to auto-complete these fields, ensuring the responses are derived from the resume, align with the enhancement focus, incorporate target keywords, reflect the company culture, include any additional information, and are professional, concise, and truthful.
-        Suggest a likely DOM selector for each field, prioritizing 'input[placeholder*="..."]', 'textarea[placeholder*="..."]', 'input[name="..."]', or 'textarea[name="..."]' based on the DOM structure. Ensure selectors are specific and match the field’s purpose (e.g., 'input[placeholder="Enter your full name"]' for 'Full Name').
-        Return only the field names, their corresponding values, and optional selectors in plain text format, one per line, like this: 'Field: Value [Selector]'. If no selector is available, omit the '[Selector]' part. Do not include any additional text, formatting (e.g., Markdown), or explanations.
+        Instructions:
+        1. Analyze the DOM content to identify all fields requiring auto-completion (e.g., personal information, education, skills, experience, additional questions).
+        2. Use 'placeholder' attributes (e.g., 'Enter your full name') or 'name' attributes to infer field purposes.
+        3. Generate truthful responses derived from the resume content, tailored to the enhancement focus:
+           - For "Clarity & Conciseness": Provide short, clear answers.
+           - For "Professional Tone": Use formal language and structure.
+           - For "Keywords Optimization": Incorporate the target keywords naturally.
+           - For "Impact & Achievement Focus": Highlight results and accomplishments.
+        4. Align responses with the industry focus and reflect the company culture notes where relevant.
+        5. Incorporate any additional information provided to enhance specific fields.
+        6. Suggest a DOM selector for each field (e.g., 'input[placeholder="Enter your full name"]', 'textarea[name="experience"]') based on the DOM structure. If no clear selector is identifiable, omit it.
+        7. Return the results in plain text format, one field per line, as 'Field: Value [Selector]' (omit [Selector] if not applicable). Do not include extra explanations or formatting.
         """
         enhanced_content = core_service.generate_openai_response(prompt)
 
-        # Step 2: Return the enhanced content for auto-filling
         return {"status": "success", "enhanced_content": enhanced_content}
     except Exception as e:
         logging.error(f"Error in enhance_application: {str(e)}")
