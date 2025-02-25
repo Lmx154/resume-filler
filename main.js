@@ -7,7 +7,7 @@ let openDropdown = ''; // new global variable for dropdown state
 
 const pages = {
   resume: { title: 'Resume', submenus: ['Upload Resume'] },
-  application: { title: 'Application', submenus: ['Upload Application', 'Enhance Application'] },
+  application: { title: 'Application', submenus: ['Upload Application'] },
   settings: { title: 'Settings', submenus: ['API Key', 'Ollama'] }
 };
 
@@ -76,6 +76,30 @@ async function processResumeFile(file) {
   try {
     const formData = new FormData();
     formData.append('file', file);
+
+    // Collect customization options
+    const enhancementFocus = document.getElementById('enhancement-focus')?.value || 'Clarity & Conciseness';
+    const industryFocus = document.getElementById('industry-focus')?.value || 'Technology';
+    const targetKeywords = document.getElementById('target-keywords')?.value || '';
+    const companyCulture = document.getElementById('company-culture')?.value || '';
+
+    const additionalInfoItems = document.querySelectorAll('#additional-info-container > div');
+    let additionalInfo = {};
+    additionalInfoItems.forEach(item => {
+      const keyInput = item.children[0];
+      const valueInput = item.children[1];
+      if (keyInput.value && valueInput.value) {
+        additionalInfo[keyInput.value] = valueInput.value;
+      }
+    });
+
+    // Add customization options to form data
+    formData.append('enhancement_focus', enhancementFocus);
+    formData.append('industry_focus', industryFocus);
+    formData.append('target_keywords', targetKeywords);
+    formData.append('company_culture', companyCulture);
+    formData.append('additional_info', JSON.stringify(additionalInfo));
+
     const response = await fetch('http://localhost:8000/api/resume/upload', { method: 'POST', body: formData });
     const result = await response.json();
     if (result.status === 'success') await handleRefreshResumeData();
@@ -99,9 +123,45 @@ function getSubmenuContent(submenu) {
     'Upload Resume': `
       <div class="w-full p-6">
         <div class="grid grid-cols-2 gap-6">
-          <div class="bg-yale_blue-300 rounded-lg p-6 border border-yale_blue-400">
-            <p class="text-lemon_chiffon-500 mb-4">Upload your resume to begin.</p>
-            <div class="border-2 border-dashed border-yale_blue-400 rounded-lg p-8 text-center bg-yale_blue-300 w-full">
+          <div class="space-y-4">
+            <p class="text-lemon_chiffon-500 mb-4">Upload your resume and configure enhancement options.</p>
+            <div class="bg-yale_blue-300 p-4 rounded-lg border border-yale_blue-400">
+              <h3 class="font-semibold text-naples_yellow-500">Enhancement Focus</h3>
+              <select id="enhancement-focus" class="w-full mt-2 p-2 border border-yale_blue-500 rounded bg-yale_blue-200 text-lemon_chiffon-500">
+                <option>Clarity & Conciseness</option>
+                <option>Professional Tone</option>
+                <option>Keywords Optimization</option>
+                <option>Impact & Achievement Focus</option>
+              </select>
+            </div>
+            <div class="bg-yale_blue-300 p-4 rounded-lg border border-yale_blue-400">
+              <h3 class="font-semibold text-naples_yellow-500">Industry Focus</h3>
+              <select id="industry-focus" class="w-full mt-2 p-2 border border-yale_blue-500 rounded bg-yale_blue-200 text-lemon_chiffon-500">
+                <option>Technology</option>
+                <option>Healthcare</option>
+                <option>Finance</option>
+                <option>Education</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="bg-yale_blue-300 p-4 rounded-lg border border-yale_blue-400">
+              <h3 class="font-semibold text-naples_yellow-500">Target Keywords</h3>
+              <textarea id="target-keywords" class="w-full mt-2 p-2 border border-yale_blue-500 rounded bg-yale_blue-200 text-lemon_chiffon-500" rows="3" placeholder="Enter relevant keywords from the job"></textarea>
+            </div>
+            <div class="bg-yale_blue-300 p-4 rounded-lg border border-yale_blue-400">
+              <h3 class="font-semibold text-naples_yellow-500">Company Culture Notes</h3>
+              <textarea id="company-culture" class="w-full mt-2 p-2 border border-yale_blue-500 rounded bg-yale_blue-200 text-lemon_chiffon-500" rows="2" placeholder="Enter notes about the company culture"></textarea>
+            </div>
+            <div class="bg-yale_blue-300 p-4 rounded-lg border border-yale_blue-400">
+              <h3 class="font-semibold text-naples_yellow-500">Additional Information</h3>
+              <div id="additional-info-container" class="max-h-32 overflow-y-auto space-y-2">
+                <!-- additional info items will be added here -->
+              </div>
+              <button id="add-additional-info" class="mt-2 bg-tomato-500 text-white px-4 py-2 rounded hover:bg-tomato-600">
+                New Item
+              </button>
+            </div>
+            <div class="border-2 border-dashed border-yale_blue-400 rounded-lg p-8 text-center bg-yale_blue-300 w-full mt-4">
               <button onclick="window.handleFileSelect()" class="bg-tomato-500 text-white px-6 py-3 rounded-lg hover:bg-tomato-600">Choose File</button>
               <p class="mt-2 text-sm text-lemon_chiffon-400">PDF, DOCX, or TXT files accepted</p>
             </div>
@@ -141,64 +201,6 @@ function getSubmenuContent(submenu) {
             </div>
             <div id="extension-data" class="bg-yale_blue-200 rounded-lg p-4 h-[70vh] w-full overflow-auto">
               <p class="text-lemon_chiffon-500 text-center">Waiting for application data...</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    `,
-    'Enhance Application': `
-      <div class="w-full p-6">
-        <div class="grid grid-cols-2 gap-6">
-          <div class="space-y-4">
-            <p class="text-lemon_chiffon-500 mb-4">Configure settings for auto-filling job applications via the browser extension.</p>
-            <div class="bg-yale_blue-300 p-4 rounded-lg border border-yale_blue-400">
-              <h3 class="font-semibold text-naples_yellow-500">Enhancement Focus</h3>
-              <select id="enhancement-focus" class="w-full mt-2 p-2 border border-yale_blue-500 rounded bg-yale_blue-200 text-lemon_chiffon-500">
-                <option>Clarity & Conciseness</option>
-                <option>Professional Tone</option>
-                <option>Keywords Optimization</option>
-                <option>Impact & Achievement Focus</option>
-              </select>
-            </div>
-            <div class="bg-yale_blue-300 p-4 rounded-lg border border-yale_blue-400">
-              <h3 class="font-semibold text-naples_yellow-500">Industry Focus</h3>
-              <select id="industry-focus" class="w-full mt-2 p-2 border border-yale_blue-500 rounded bg-yale_blue-200 text-lemon_chiffon-500">
-                <option>Technology</option>
-                <option>Healthcare</option>
-                <option>Finance</option>
-                <option>Education</option>
-                <option>Other</option>
-              </select>
-            </div>
-            <div class="bg-yale_blue-300 p-4 rounded-lg border border-yale_blue-400">
-              <h3 class="font-semibold text-naples_yellow-500">Target Keywords</h3>
-              <textarea id="target-keywords" class="w-full mt-2 p-2 border border-yale_blue-500 rounded bg-yale_blue-200 text-lemon_chiffon-500" rows="3" placeholder="Enter relevant keywords from the job"></textarea>
-            </div>
-            <div class="bg-yale_blue-300 p-4 rounded-lg border border-yale_blue-400">
-              <h3 class="font-semibold text-naples_yellow-500">Company Culture Notes</h3>
-              <textarea id="company-culture" class="w-full mt-2 p-2 border border-yale_blue-500 rounded bg-yale_blue-200 text-lemon_chiffon-500" rows="2" placeholder="Enter notes about the company culture"></textarea>
-            </div>
-            <div class="bg-yale_blue-300 p-4 rounded-lg border border-yale_blue-400">
-              <h3 class="font-semibold text-naples_yellow-500">Additional Information</h3>
-              <div id="additional-info-container" class="max-h-32 overflow-y-auto space-y-2">
-                <!-- additional info items will be added here -->
-              </div>
-              <button id="add-additional-info" class="mt-2 bg-tomato-500 text-white px-4 py-2 rounded hover:bg-tomato-600">
-                New Item
-              </button>
-            </div>
-            <p class="text-lemon_chiffon-400 text-sm">Use the 'Extract Application' button in the browser extension to apply these settings.</p>
-          </div>
-          <div class="bg-yale_blue-300 rounded-lg p-6 border border-yale_blue-400">
-            <div class="flex justify-between items-center mb-4">
-              <h3 class="text-xl font-semibold text-naples_yellow-500">Last Applied Response</h3>
-              <div>
-                <button onclick="window.handleRefreshEnhanceData()" class="mr-2 text-sm text-lemon_chiffon-500 hover:text-lemon_chiffon-400">↻ Refresh</button>
-                <button onclick="window.clearAIResponse()" class="text-sm text-tomato-500 hover:text-tomato-600">Clear</button>
-              </div>
-            </div>
-            <div id="ai-response" class="bg-yale_blue-200 rounded-lg p-4 h-[70vh] w-full overflow-auto">
-              <p class="text-lemon_chiffon-500 text-center">No enhancement applied yet...</p>
             </div>
           </div>
         </div>
@@ -282,7 +284,6 @@ window.handleSubmenu = (submenu) => {
   initAdditionalInfo();
   if (submenu === 'Upload Application') setTimeout(() => window.handleRefreshData(), 500);
   else if (submenu === 'Upload Resume') setTimeout(() => window.handleRefreshResumeData(), 500);
-  else if (submenu === 'Enhance Application') setTimeout(() => window.handleRefreshEnhanceData(), 500);
 };
 
 // File selection handler
@@ -378,47 +379,6 @@ window.handleRefreshResumeData = async () => {
   } catch (error) { console.error('Error fetching resume data:', error); }
 };
 
-window.clearAIResponse = () => {
-  const responseContainer = document.getElementById('ai-response');
-  if (responseContainer) responseContainer.innerHTML = '<p class="text-lemon_chiffon-500 text-center">No enhancement applied yet...</p>';
-};
-
-window.handleRefreshEnhanceData = async () => {
-  try {
-    const aiResponse = document.getElementById('ai-response');
-    if (!aiResponse) return;
-    const response = await fetch('http://localhost:8000/api/application/last_enhance', { method: 'GET' });
-    const result = await response.json();
-    if (result.status === 'success' && result.enhanced_content) {
-      const lines = result.enhanced_content.split('\n');
-      let formattedResponse = '<div class="text-lemon_chiffon-500 space-y-4">';
-      lines.forEach(line => {
-        const match = line.match(/(.+?):\s(.+?)(?:\s\[(.*?)\])?$/);
-        if (match) {
-          const field = match[1].trim();
-          const value = match[2].trim();
-          const selector = match[3] ? match[3].trim() : 'Not specified';
-          formattedResponse += `
-            <div class="bg-yale_blue-300 p-3 rounded-lg">
-              <p><span class="font-semibold text-naples_yellow-500">Field:</span> ${field}</p>
-              <p><span class="font-semibold text-naples_yellow-500">Value:</span> ${value}</p>
-              <p class="text-sm"><span class="font-semibold text-naples_yellow-500">Selector:</span> ${selector}</p>
-            </div>
-          `;
-        }
-      });
-      formattedResponse += '</div>';
-      aiResponse.innerHTML = formattedResponse;
-    } else {
-      aiResponse.innerHTML = `<p class="text-lemon_chiffon-500 text-center">${result.message || 'No enhancement applied yet...'}</p>`;
-    }
-  } catch (error) {
-    console.error('Error fetching enhance data:', error);
-    const aiResponse = document.getElementById('ai-response');
-    if (aiResponse) aiResponse.innerHTML = `<div class="text-tomato-500 p-4">Error: ${error.message}</div>`;
-  }
-};
-
 function addAdditionalInfoItem(key = '', value = '') {
   const container = document.getElementById('additional-info-container');
   if (!container) return;
@@ -437,7 +397,7 @@ function addAdditionalInfoItem(key = '', value = '') {
 
 function initAdditionalInfo() {
   const addBtn = document.getElementById('add-additional-info');
-  if(addBtn){
+  if (addBtn) {
     addBtn.addEventListener('click', () => addAdditionalInfoItem());
   }
 }
