@@ -37,7 +37,6 @@ def enhance_application(request: EnhanceApplicationRequest):
         if request.additional_info and isinstance(request.additional_info, dict):
             additional_info_str = "\nAdditional Information:\n" + "\n".join(f"- {k}: {v}" for k, v in request.additional_info.items())
 
-        # Enhanced prompt with better use of customization fields
         prompt = f"""
         You are a professional resume writer tasked with auto-filling a job application form based on a user's resume. Below is the information provided:
 
@@ -67,7 +66,10 @@ def enhance_application(request: EnhanceApplicationRequest):
         7. Return the results in plain text format, one field per line, as 'Field: Value [Selector]' (omit [Selector] if not applicable). Do not include extra explanations or formatting.
         """
         enhanced_content = core_service.generate_openai_response(prompt)
-
+        
+        # Store the enhanced content in core_service
+        core_service.last_enhance = {"status": "success", "enhanced_content": enhanced_content}
+        
         return {"status": "success", "enhanced_content": enhanced_content}
     except Exception as e:
         logging.error(f"Error in enhance_application: {str(e)}")
@@ -85,3 +87,37 @@ def get_last_extraction():
         return {"status": "error", "message": "Invalid data structure"}
     logging.info(f"Returning extraction with text length: {len(last_extraction.get('display_text', ''))}")
     return last_extraction
+
+@router.get("/last_enhance")
+def get_last_enhance():
+    last_enhance = core_service.last_enhance
+    if not last_enhance:
+        return {"status": "pending", "message": "No enhancement applied yet"}
+    return last_enhance
+
+@router.get("/settings")
+def get_enhancement_settings():
+    try:
+        # This would ideally come from a frontend API call, but for now, we'll simulate retrieval
+        # In a real scenario, you'd store these settings persistently, e.g., in config_service
+        return {
+            "status": "success",
+            "enhancement_focus": "Clarity & Conciseness",  # Default, overridden by frontend POST
+            "industry_focus": "Technology",
+            "target_keywords": "",
+            "company_culture": "",
+            "additional_info": {}
+        }
+    except Exception as e:
+        logging.error(f"Error fetching enhancement settings: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/settings")
+def save_enhancement_settings(request: EnhanceApplicationRequest):
+    try:
+        # In a real implementation, save these to a persistent store (e.g., config_service)
+        # For now, we're just returning success to allow the extension to fetch them
+        return {"status": "success"}
+    except Exception as e:
+        logging.error(f"Error saving enhancement settings: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))

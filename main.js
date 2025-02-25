@@ -33,13 +33,12 @@ function renderContent() {
     </div>
   `;
 
-  // New top nav bar with click-to-toggle dropdowns
   const topNavbar = `
     <nav class="bg-yale_blue-400 text-white px-4 py-2 flex items-center gap-4">
       ${Object.entries(pages).map(([key, value]) => `
         <div class="relative">
           <button onclick="window.toggleDropdown('${key}')" class="menu-button hover:font-bold">
-            ${value.title} ${value.submenus && value.submenus.length ? '<span class="ml-1">&#x25BC;</span>' : ''}
+            ${value.title} ${value.submenus && value.submenus.length ? '<span class="ml-1">▼</span>' : ''}
           </button>
           ${value.submenus && value.submenus.length ? `
             <div class="dropdown ${openDropdown === key ? 'block' : 'hidden'} absolute left-0 mt-1 bg-yale_blue-300 text-lemon_chiffon-500 shadow-md">
@@ -115,7 +114,6 @@ function getSubmenuContent(submenu) {
                 <button onclick="window.clearResumeData()" class="text-sm text-tomato-500 hover:text-tomato-600">Clear</button>
               </div>
             </div>
-            <!-- Changed fixed height to h-[70vh] for full vertical space -->
             <div id="resume-data" class="bg-yale_blue-200 rounded-lg p-4 h-[70vh] w-full overflow-auto">
               <p class="text-lemon_chiffon-500 text-center">No resume loaded yet...</p>
             </div>
@@ -141,7 +139,6 @@ function getSubmenuContent(submenu) {
                 <button onclick="window.clearExtensionData()" class="text-sm text-tomato-500 hover:text-tomato-600">Clear</button>
               </div>
             </div>
-            <!-- Changed height to h-[70vh] -->
             <div id="extension-data" class="bg-yale_blue-200 rounded-lg p-4 h-[70vh] w-full overflow-auto">
               <p class="text-lemon_chiffon-500 text-center">Waiting for application data...</p>
             </div>
@@ -153,7 +150,7 @@ function getSubmenuContent(submenu) {
       <div class="w-full p-6">
         <div class="grid grid-cols-2 gap-6">
           <div class="space-y-4">
-            <p class="text-lemon_chiffon-500 mb-4">Generate auto-fill responses for your scraped job application.</p>
+            <p class="text-lemon_chiffon-500 mb-4">Configure settings for auto-filling job applications via the browser extension.</p>
             <div class="bg-yale_blue-300 p-4 rounded-lg border border-yale_blue-400">
               <h3 class="font-semibold text-naples_yellow-500">Enhancement Focus</h3>
               <select id="enhancement-focus" class="w-full mt-2 p-2 border border-yale_blue-500 rounded bg-yale_blue-200 text-lemon_chiffon-500">
@@ -190,21 +187,18 @@ function getSubmenuContent(submenu) {
                 New Item
               </button>
             </div>
-            <button onclick="window.handleGenerateImprovements()" class="bg-tomato-500 text-white px-6 py-3 rounded-lg hover:bg-tomato-600 transition-colors w-full">
-              Generate Auto-Fill Responses
-            </button>
+            <p class="text-lemon_chiffon-400 text-sm">Use the 'Extract Application' button in the browser extension to apply these settings.</p>
           </div>
           <div class="bg-yale_blue-300 rounded-lg p-6 border border-yale_blue-400">
             <div class="flex justify-between items-center mb-4">
-              <h3 class="text-xl font-semibold text-naples_yellow-500">AI Response</h3>
+              <h3 class="text-xl font-semibold text-naples_yellow-500">Last Applied Response</h3>
               <div>
-                <button onclick="window.clearAIResponse()" class="text-sm text-tomato-500 hover:text-tomato-600">
-                  Clear
-                </button>
+                <button onclick="window.handleRefreshEnhanceData()" class="mr-2 text-sm text-lemon_chiffon-500 hover:text-lemon_chiffon-400">↻ Refresh</button>
+                <button onclick="window.clearAIResponse()" class="text-sm text-tomato-500 hover:text-tomato-600">Clear</button>
               </div>
             </div>
             <div id="ai-response" class="bg-yale_blue-200 rounded-lg p-4 h-[70vh] w-full overflow-auto">
-              <p class="text-lemon_chiffon-500 text-center">AI response will appear here...</p>
+              <p class="text-lemon_chiffon-500 text-center">No enhancement applied yet...</p>
             </div>
           </div>
         </div>
@@ -283,11 +277,12 @@ window.handleNavigation = (page) => {
 
 window.handleSubmenu = (submenu) => {
   currentSubmenu = submenu;
-  openDropdown = ''; // collapse dropdown after selection
+  openDropdown = '';
   document.querySelector('#app').innerHTML = renderContent();
   initAdditionalInfo();
   if (submenu === 'Upload Application') setTimeout(() => window.handleRefreshData(), 500);
   else if (submenu === 'Upload Resume') setTimeout(() => window.handleRefreshResumeData(), 500);
+  else if (submenu === 'Enhance Application') setTimeout(() => window.handleRefreshEnhanceData(), 500);
 };
 
 // File selection handler
@@ -385,85 +380,45 @@ window.handleRefreshResumeData = async () => {
 
 window.clearAIResponse = () => {
   const responseContainer = document.getElementById('ai-response');
-  if (responseContainer) responseContainer.innerHTML = '<p class="text-lemon_chiffon-500 text-center">AI response will appear here...</p>';
+  if (responseContainer) responseContainer.innerHTML = '<p class="text-lemon_chiffon-500 text-center">No enhancement applied yet...</p>';
 };
 
-window.handleGenerateImprovements = async () => {
+window.handleRefreshEnhanceData = async () => {
   try {
-    const extensionResponse = await fetch('http://localhost:8000/api/application/last_extract');
-    const extensionData = await extensionResponse.json();
-    if (!extensionData.display_text) throw new Error('No application data available. Please upload an application first.');
-    const resumeResponse = await fetch('http://localhost:8000/api/resume/last_upload', { method: 'GET' });
-    const resumeData = await resumeResponse.json();
-    if (!resumeData.content) throw new Error('No resume data available. Please upload a resume first.');
-
-    const enhancementFocus = document.getElementById('enhancement-focus').value;
-    const industryFocus = document.getElementById('industry-focus').value;
-    const targetKeywords = document.getElementById('target-keywords').value;
-    const companyCulture = document.getElementById('company-culture').value;
-
-    const additionalInfoItems = document.querySelectorAll('#additional-info-container > div');
-    let additionalInfo = {};
-    additionalInfoItems.forEach(item => {
-      const keyInput = item.children[0];
-      const valueInput = item.children[1];
-      if(keyInput.value && valueInput.value){
-        additionalInfo[keyInput.value] = valueInput.value;
-      }
-    });
-
-    const requestBody = {
-      enhancement_focus: enhancementFocus,
-      resume_content: resumeData.content,
-      application_content: extensionData.display_text,
-      industry_focus: industryFocus,
-      target_keywords: targetKeywords,
-      company_culture: companyCulture,
-      additional_info: additionalInfo
-    };
-
-    const response = await fetch('http://localhost:8000/api/application/enhance', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(requestBody)
-    });
-
+    const aiResponse = document.getElementById('ai-response');
+    if (!aiResponse) return;
+    const response = await fetch('http://localhost:8000/api/application/last_enhance', { method: 'GET' });
     const result = await response.json();
-    if (result.status === 'success') {
-      const aiResponse = document.getElementById('ai-response');
-      if (aiResponse) {
-        // Parse and format the enhanced content
-        const lines = result.enhanced_content.split('\n');
-        let formattedResponse = '<div class="text-lemon_chiffon-500 space-y-4">';
-        
-        lines.forEach(line => {
-          const match = line.match(/(.+?):\s(.+?)(?:\s\[(.*?)\])?$/);
-          if (match) {
-            const field = match[1].trim();
-            const value = match[2].trim();
-            const selector = match[3] ? match[3].trim() : 'Not specified';
-            formattedResponse += `
-              <div class="bg-yale_blue-300 p-3 rounded-lg">
-                <p><span class="font-semibold text-naples_yellow-500">Field:</span> ${field}</p>
-                <p><span class="font-semibold text-naples_yellow-500">Value:</span> ${value}</p>
-                <p class="text-sm"><span class="font-semibold text-naples_yellow-500">Selector:</span> ${selector}</p>
-              </div>
-            `;
-          }
-        });
-        
-        formattedResponse += '</div>';
-        aiResponse.innerHTML = formattedResponse;
-      }
-    } else throw new Error(result.message || 'Failed to generate auto-fill responses');
+    if (result.status === 'success' && result.enhanced_content) {
+      const lines = result.enhanced_content.split('\n');
+      let formattedResponse = '<div class="text-lemon_chiffon-500 space-y-4">';
+      lines.forEach(line => {
+        const match = line.match(/(.+?):\s(.+?)(?:\s\[(.*?)\])?$/);
+        if (match) {
+          const field = match[1].trim();
+          const value = match[2].trim();
+          const selector = match[3] ? match[3].trim() : 'Not specified';
+          formattedResponse += `
+            <div class="bg-yale_blue-300 p-3 rounded-lg">
+              <p><span class="font-semibold text-naples_yellow-500">Field:</span> ${field}</p>
+              <p><span class="font-semibold text-naples_yellow-500">Value:</span> ${value}</p>
+              <p class="text-sm"><span class="font-semibold text-naples_yellow-500">Selector:</span> ${selector}</p>
+            </div>
+          `;
+        }
+      });
+      formattedResponse += '</div>';
+      aiResponse.innerHTML = formattedResponse;
+    } else {
+      aiResponse.innerHTML = `<p class="text-lemon_chiffon-500 text-center">${result.message || 'No enhancement applied yet...'}</p>`;
+    }
   } catch (error) {
-    console.error('Error generating auto-fill responses:', error);
+    console.error('Error fetching enhance data:', error);
     const aiResponse = document.getElementById('ai-response');
     if (aiResponse) aiResponse.innerHTML = `<div class="text-tomato-500 p-4">Error: ${error.message}</div>`;
   }
 };
 
-// New helper function to add additional info items (updated)
 function addAdditionalInfoItem(key = '', value = '') {
   const container = document.getElementById('additional-info-container');
   if (!container) return;
@@ -480,7 +435,6 @@ function addAdditionalInfoItem(key = '', value = '') {
   });
 }
 
-// Initializes the Additional Information UI after render
 function initAdditionalInfo() {
   const addBtn = document.getElementById('add-additional-info');
   if(addBtn){
@@ -488,19 +442,17 @@ function initAdditionalInfo() {
   }
 }
 
-// New function to toggle the dropdown on click
 window.toggleDropdown = (page) => {
   if (pages[page].submenus && pages[page].submenus.length) {
     openDropdown = openDropdown === page ? '' : page;
   } else {
     currentPage = page;
     currentSubmenu = '';
-    openDropdown = ''; // reset dropdown if no submenu
+    openDropdown = '';
   }
   document.querySelector('#app').innerHTML = renderContent();
   initAdditionalInfo();
 };
 
-// Initial render
 document.querySelector('#app').innerHTML = renderContent();
 initAdditionalInfo();
